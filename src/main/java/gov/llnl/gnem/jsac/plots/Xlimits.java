@@ -51,4 +51,9 @@ public class Xlimits {
         this.limitsOn = limitsOn;
     }
 
+    @Override
+    public String toString() {
+        return "Xlimits{" + "limitsOn=" + limitsOn + ", pdw=" + pdw + '}';
+    }
+
 }

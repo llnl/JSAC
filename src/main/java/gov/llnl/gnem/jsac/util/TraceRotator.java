@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.io.SACHeader;
-import llnl.gnem.dftt.core.util.PairT;
+import llnl.gnem.core.util.PairT;
 
 public class TraceRotator {
 

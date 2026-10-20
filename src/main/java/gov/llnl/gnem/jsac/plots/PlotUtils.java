@@ -25,7 +25,6 @@ package gov.llnl.gnem.jsac.plots;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,52 +36,100 @@ import gov.llnl.gnem.jsac.dataAccess.dataObjects.SpectralData;
 import gov.llnl.gnem.jsac.io.SACHeader;
 import gov.llnl.gnem.jsac.plots.FileIDInfo.FieldLayout;
 import gov.llnl.gnem.jsac.plots.FileIDInfo.Location;
+import static gov.llnl.gnem.jsac.plots.FileIDInfo.Location.LL;
+import static gov.llnl.gnem.jsac.plots.FileIDInfo.Location.LR;
+import static gov.llnl.gnem.jsac.plots.FileIDInfo.Location.UL;
+import static gov.llnl.gnem.jsac.plots.FileIDInfo.Location.UR;
 import gov.llnl.gnem.jsac.plots.FileIDInfo.Type;
 import gov.llnl.gnem.jsac.plots.picking.PhasePanel;
 import gov.llnl.gnem.jsac.plots.picking.PickConfigFrame;
 import gov.llnl.gnem.jsac.plots.picking.PickData;
 import gov.llnl.gnem.jsac.plots.picking.PickPhaseState;
+import gov.llnl.gnem.jsac.plots.plot.PlotPanel;
 import gov.llnl.gnem.jsac.util.PartialDataWindow;
-import llnl.gnem.dftt.core.gui.plotting.AxisScale;
-import llnl.gnem.dftt.core.gui.plotting.HorizAlignment;
-import llnl.gnem.dftt.core.gui.plotting.HorizPinEdge;
-import llnl.gnem.dftt.core.gui.plotting.MouseMode;
-import llnl.gnem.dftt.core.gui.plotting.PickCreationInfo;
-import llnl.gnem.dftt.core.gui.plotting.TickMetrics;
-import llnl.gnem.dftt.core.gui.plotting.VertAlignment;
-import llnl.gnem.dftt.core.gui.plotting.VertPinEdge;
-import llnl.gnem.dftt.core.gui.plotting.ZoomLimits;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JPlotKeyMessage;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JSubplot;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JWindowRegion;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.PlotAxis;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.VPickLine;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.XAxis;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.YAxis;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.Line;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.PinnedText;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.PlotObject;
-import llnl.gnem.dftt.core.gui.plotting.transforms.Coordinate;
-import llnl.gnem.dftt.core.util.PairT;
-import llnl.gnem.dftt.core.util.SeriesMath;
-import llnl.gnem.dftt.core.util.StreamKey;
+import java.util.logging.Level;
+import llnl.gnem.core.gui.plotting.AxisScale;
+import llnl.gnem.core.gui.plotting.HorizAlignment;
+import llnl.gnem.core.gui.plotting.HorizPinEdge;
+import llnl.gnem.core.gui.plotting.MouseMode;
+import llnl.gnem.core.gui.plotting.PenStyle;
+import llnl.gnem.core.gui.plotting.PickCreationInfo;
+import llnl.gnem.core.gui.plotting.TickMetrics;
+import llnl.gnem.core.gui.plotting.VertAlignment;
+import llnl.gnem.core.gui.plotting.VertPinEdge;
+import llnl.gnem.core.gui.plotting.ZoomLimits;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JPlotKeyMessage;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JSubplot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JWindowRegion;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.PickTextPosition;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.PlotAxis;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.VPickLine;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.XAxis;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.YAxis;
+import llnl.gnem.core.gui.plotting.plotPrefs.PickPrefs;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPreferenceModel;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPresentationPrefs;
+import llnl.gnem.core.gui.plotting.plotobject.BasicText;
+import llnl.gnem.core.gui.plotting.plotobject.FractionalPinnedText;
+import llnl.gnem.core.gui.plotting.plotobject.Line;
+import llnl.gnem.core.gui.plotting.plotobject.PinnedText;
+import llnl.gnem.core.gui.plotting.plotobject.PlotObject;
+import llnl.gnem.core.gui.plotting.plotobject.TextBlockRenderDirection;
+import llnl.gnem.core.gui.plotting.transforms.Coordinate;
+import llnl.gnem.core.util.ApplicationLogger;
+import llnl.gnem.core.util.PairT;
+import llnl.gnem.core.util.SeriesMath;
+import llnl.gnem.core.util.StreamKey;
 
 public class PlotUtils {
 
-    public static double addTextToPlotVerticalOrientation(double startOffset,
+    public static List<String> getPlotStrings(double startOffset,
             SacTraceData sacData,
-            SacTraceData referenceSacData,
-            JSubplot subplot,
-            int fileNumber,
-            Double markerCorrection,
-            Color color) {
+            SacTraceData referenceSacData, double reftimeAdjustment) {
+        List<String> result = new ArrayList<>();
+        if (!FileIDInfo.getInstance().isOn()) {
+            return result;
+        }
+        Type type = FileIDInfo.getInstance().getType();
+        if (type == Type.NAME) {
+            String text = createTextString("NAME", sacData.getFilename().getFileName().toString(), FileIDInfo.getInstance().getFormat());
+            result.add(text);
+        } else {
+            List<String> tmpList = createTextFields(type, sacData, referenceSacData, reftimeAdjustment);
+
+            FieldLayout layout = FileIDInfo.getInstance().getFieldLayout();
+            if (layout == FieldLayout.VERTICAL) {
+                result.addAll(tmpList);
+            } else {
+                StringBuilder sb = new StringBuilder();
+                String delimiter = FileIDInfo.getInstance().getFieldDelimiter();
+                ArrayList<String> items = new ArrayList<>(tmpList);
+                for (int j = 0; j < items.size(); ++j) {
+                    String item = items.get(j);
+                    sb.append(item);
+                    if (j < items.size() - 1) {
+                        sb.append(delimiter);
+                    }
+                }
+                if (sb.length() > 0) {
+                    result.add(sb.toString());
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public static double addStringsToPlot(Collection<String> strings,
+            Collection<Color> colors,
+            double startOffset,
+            JSubplot subplot) {
         if (!FileIDInfo.getInstance().isOn()) {
             return 0;
         }
         Location location = FileIDInfo.getInstance().getLocation();
         Type type = FileIDInfo.getInstance().getType();
-        List<String> result = createTextFields(type, sacData, referenceSacData, location);
         if (startOffset == 0) {
             startOffset = FileIDInfo.getInstance().getFontSize() / 4;
         }
@@ -96,6 +143,7 @@ public class PlotUtils {
                 horizPinEdge = HorizPinEdge.RIGHT;
                 vertPinEdge = VertPinEdge.TOP;
                 horizAlignment = HorizAlignment.RIGHT;
+                BasicText.setRenderDirection(TextBlockRenderDirection.TOP_TO_BOTTOM);
                 break;
             }
 
@@ -103,6 +151,7 @@ public class PlotUtils {
                 horizPinEdge = HorizPinEdge.LEFT;
                 vertPinEdge = VertPinEdge.TOP;
                 horizAlignment = HorizAlignment.LEFT;
+                BasicText.setRenderDirection(TextBlockRenderDirection.TOP_TO_BOTTOM);
                 break;
             }
 
@@ -110,12 +159,74 @@ public class PlotUtils {
                 horizPinEdge = HorizPinEdge.RIGHT;
                 vertPinEdge = VertPinEdge.BOTTOM;
                 horizAlignment = HorizAlignment.RIGHT;
+                BasicText.setRenderDirection(TextBlockRenderDirection.BOTTOM_TO_TOP);
                 break;
             }
             case LL: {
                 horizPinEdge = HorizPinEdge.LEFT;
                 vertPinEdge = VertPinEdge.BOTTOM;
                 horizAlignment = HorizAlignment.LEFT;
+                BasicText.setRenderDirection(TextBlockRenderDirection.BOTTOM_TO_TOP);
+                break;
+            }
+        }
+
+        plotText(subplot, strings, colors, vOffset, horizPinEdge, vertPinEdge, horizAlignment);
+        vOffset += increment;
+
+        return vOffset;
+
+    }
+
+    public static double addTextToPlotVerticalOrientation(double startOffset,
+            SacTraceData sacData,
+            SacTraceData referenceSacData,
+            JSubplot subplot,
+            int fileNumber,
+            Double markerCorrection,
+            Color color) {
+        if (!FileIDInfo.getInstance().isOn()) {
+            return 0;
+        }
+        Location location = FileIDInfo.getInstance().getLocation();
+        Type type = FileIDInfo.getInstance().getType();
+        if (startOffset == 0) {
+            startOffset = FileIDInfo.getInstance().getFontSize() / 4;
+        }
+        double vOffset = startOffset;
+        double increment = FileIDInfo.getInstance().getFontSize() / 4 + FileIDInfo.getInstance().getSpacingAdjustment();
+        HorizPinEdge horizPinEdge = HorizPinEdge.RIGHT;
+        VertPinEdge vertPinEdge = VertPinEdge.TOP;
+        HorizAlignment horizAlignment = HorizAlignment.RIGHT;
+        switch (location) {
+            case UR: {
+                horizPinEdge = HorizPinEdge.RIGHT;
+                vertPinEdge = VertPinEdge.TOP;
+                horizAlignment = HorizAlignment.RIGHT;
+                BasicText.setRenderDirection(TextBlockRenderDirection.TOP_TO_BOTTOM);
+                break;
+            }
+
+            case UL: {
+                horizPinEdge = HorizPinEdge.LEFT;
+                vertPinEdge = VertPinEdge.TOP;
+                horizAlignment = HorizAlignment.LEFT;
+                BasicText.setRenderDirection(TextBlockRenderDirection.TOP_TO_BOTTOM);
+                break;
+            }
+
+            case LR: {
+                horizPinEdge = HorizPinEdge.RIGHT;
+                vertPinEdge = VertPinEdge.BOTTOM;
+                horizAlignment = HorizAlignment.RIGHT;
+                BasicText.setRenderDirection(TextBlockRenderDirection.BOTTOM_TO_TOP);
+                break;
+            }
+            case LL: {
+                horizPinEdge = HorizPinEdge.LEFT;
+                vertPinEdge = VertPinEdge.BOTTOM;
+                horizAlignment = HorizAlignment.LEFT;
+                BasicText.setRenderDirection(TextBlockRenderDirection.BOTTOM_TO_TOP);
                 break;
             }
         }
@@ -124,12 +235,10 @@ public class PlotUtils {
             plotText(subplot, text, vOffset, horizPinEdge, vertPinEdge, horizAlignment, color);
             vOffset += increment;
         } else {
+            List<String> result = createTextFields(type, sacData, referenceSacData, markerCorrection);
             FieldLayout layout = FileIDInfo.getInstance().getFieldLayout();
             if (layout == FieldLayout.VERTICAL) {
-                for (String text : result) {
-                    plotText(subplot, text, vOffset, horizPinEdge, vertPinEdge, horizAlignment, color);
-                    vOffset += increment;
-                }
+                plotText(subplot, result, vOffset, horizPinEdge, vertPinEdge, horizAlignment, color);
             } else {
                 StringBuilder sb = new StringBuilder();
                 String delimiter = FileIDInfo.getInstance().getFieldDelimiter();
@@ -169,6 +278,55 @@ public class PlotUtils {
                 FileIDInfo.getInstance().getFontName(),
                 FileIDInfo.getInstance().getFontSize(),
                 color,
+                horizalignment,
+                VertAlignment.CENTER);
+
+        text.setVisible(textVisible);
+        subplot.AddPlotObject(text);
+        return text;
+    }
+
+    public static PinnedText plotText(JSubplot subplot,
+            Collection<String> strings,
+            Collection<Color> colors,
+            double vOffset,
+            HorizPinEdge horizPinEdge,
+            VertPinEdge vertPinEdge,
+            HorizAlignment horizalignment) {
+        boolean textVisible = true;
+        PinnedText text = new PinnedText(5.0,
+                vOffset,
+                strings,
+                colors,
+                horizPinEdge,
+                vertPinEdge,
+                FileIDInfo.getInstance().getFontName(),
+                FileIDInfo.getInstance().getFontSize(),
+                horizalignment,
+                VertAlignment.CENTER);
+
+        text.setVisible(textVisible);
+        subplot.AddPlotObject(text);
+        return text;
+    }
+
+    public static PinnedText plotText(JSubplot subplot,
+            Collection<String> strings,
+            double vOffset,
+            HorizPinEdge horizPinEdge,
+            VertPinEdge vertPinEdge,
+            HorizAlignment horizalignment, Color color) {
+        boolean textVisible = true;
+        Collection<Color> colors = new ArrayList<>();
+        colors.add(color);
+        PinnedText text = new PinnedText(5.0,
+                vOffset,
+                strings,
+                colors,
+                horizPinEdge,
+                vertPinEdge,
+                FileIDInfo.getInstance().getFontName(),
+                FileIDInfo.getInstance().getFontSize(),
                 horizalignment,
                 VertAlignment.CENTER);
 
@@ -252,11 +410,15 @@ public class PlotUtils {
         if (label == null) {
             label = "";
         }
-
-        double yAxisFraction = 0.75;
+        PickPrefs prefs = PlotPreferenceModel.getInstance().getPrefs().getPickPrefs();
+        double yAxisFraction = prefs.getHeight();
         VPickLine vpl = new VPickLine(time + markerCorrection, yAxisFraction, label);
-        vpl.setColor(Color.black);
+        vpl.setColor(prefs.getColor());
         vpl.setSelectable(true);
+        vpl.setPenStyle(prefs.getPenStyle());
+        vpl.setTextPosition(prefs.getTextPosition());
+        vpl.setTextSize(prefs.getTextSize());
+        vpl.setWidth(prefs.getWidth());
         vpl.setDraggable(true);
         plot.AddPlotObject(vpl);
         return vpl;
@@ -269,6 +431,19 @@ public class PlotUtils {
             String label = String.format("%s", "O");
             double yAxisFraction = 0.8;
             VPickLine vpl = new VPickLine(markerTime + timeCorrection, yAxisFraction, label);
+            vpl.setColor(Color.black);
+            vpl.setSelectable(false);
+            plot.AddPlotObject(vpl);
+        }
+    }
+
+    public static void addOriginReferenceLineEpoch(SacTraceData sacData, JSubplot plot) {
+        Double offset = sacData.getOmarkerTime();
+        if (offset != null) {
+            double markerTime = offset + sacData.getReferenceTime();
+            String label = String.format("%s", "O");
+            double yAxisFraction = 0.8;
+            VPickLine vpl = new VPickLine(markerTime, yAxisFraction, label);
             vpl.setColor(Color.black);
             vpl.setSelectable(false);
             plot.AddPlotObject(vpl);
@@ -288,14 +463,14 @@ public class PlotUtils {
             maxVal = e;
         }
 
-        Xlimits limits = PlotAxes.getInstance().getXlimits();
+        Xlimits limits = PlotPrefs.getInstance().getXlimits();
         if (limits.isLimitsOn()) {
             PartialDataWindow pdw = limits.getPdw();
             minVal = maybeSetMinVal(pdw, std, minVal);
 
             maxVal = maybeSetMaxVal(pdw, std, maxVal);
         }
-        if (PlotAxes.getInstance().getXscale() == Scale.LOG) {
+        if (PlotPrefs.getInstance().getXscale() == Scale.LOG) {
             double floor = PlotDrawingData.getInstance().getFloorValue();
             if (minVal < floor) {
                 minVal = floor;
@@ -332,11 +507,13 @@ public class PlotUtils {
     }
 
     public static void setXlabelAttributes(JMultiAxisPlot aplot) {
-        aplot.getXaxis().setLabelFontSize(PlotAxes.getInstance().getXlabelFontSize());
-        boolean visible = PlotAxes.getInstance().isShowXlabel();
+        aplot.getXaxis().setLabelFontSize(PlotPrefs.getInstance().getXlabelFontSize());
+        boolean visible = PlotPrefs.getInstance().isShowXlabel();
+        aplot.getXaxis().setLabelOffset(PlotPrefs.getInstance().getxLabelOffsetMM());
         aplot.getXaxis().setLabelVisible(visible);
+        aplot.getXaxis().setTickFontSize(PlotPrefs.getInstance().getXlabelTickFontSize());
         if (visible) {
-            String label = PlotAxes.getInstance().getXlabel();
+            String label = PlotPrefs.getInstance().getXlabel();
             if (label != null) {
                 aplot.getXaxis().setLabelText(label);
             }
@@ -344,12 +521,13 @@ public class PlotUtils {
     }
 
     public static void setYlabelAttributes(JSubplot subplot) {
-        subplot.getYaxis().setLabelOffset(14.0);
-        subplot.getYaxis().setLabelFontSize(PlotAxes.getInstance().getYlabelFontSize());
-        boolean visible = PlotAxes.getInstance().isShowYlabel();
+        subplot.getYaxis().setLabelOffset(PlotPrefs.getInstance().getyLabelOffsetMM());
+        subplot.getYaxis().setLabelFontSize(PlotPrefs.getInstance().getYlabelFontSize());
+        subplot.getYaxis().setTickFontSize(PlotPrefs.getInstance().getYlabelTickFontSize());
+        boolean visible = PlotPrefs.getInstance().isShowYlabel();
         subplot.getYaxis().setLabelVisible(visible);
         if (visible) {
-            String label = PlotAxes.getInstance().getYlabel();
+            String label = PlotPrefs.getInstance().getYlabel();
             if (label != null) {
                 subplot.getYaxis().setLabelText(label);
             }
@@ -357,7 +535,7 @@ public class PlotUtils {
     }
 
     public static void maybeApplyFloorToYvalues(float[] data) {
-        if (PlotAxes.getInstance().getYscale() == Scale.LOG) {
+        if (PlotPrefs.getInstance().getYscale() == Scale.LOG) {
             float minVal = (float) PlotDrawingData.getInstance().getFloorValue();
             for (int j = 0; j < data.length; ++j) {
                 data[j] = data[j] >= minVal ? data[j] : minVal;
@@ -367,15 +545,23 @@ public class PlotUtils {
     }
 
     public static void setYAxisScale(JSubplot subplot) {
-        if (PlotAxes.getInstance().getYscale() == Scale.LOG) {
+        if (PlotPrefs.getInstance().getYscale() == Scale.LOG) {
             subplot.getCoordinateTransform().setYScale(AxisScale.LOG);
         } else {
             subplot.getCoordinateTransform().setYScale(AxisScale.LINEAR);
         }
     }
 
+    public static void setXAxisScale(JSubplot subplot) {
+        if (PlotPrefs.getInstance().getXscale() == Scale.LOG) {
+            subplot.getCoordinateTransform().setYScale(AxisScale.LOG);
+        } else {
+            subplot.getCoordinateTransform().setXScale(AxisScale.LINEAR);
+        }
+    }
+
     public static PairT<Double, float[]> maybeTrimForLogDisplay(double plotStartTime, float[] data, double deltaT) {
-        if (PlotAxes.getInstance().getXscale() == Scale.LOG) {
+        if (PlotPrefs.getInstance().getXscale() == Scale.LOG) {
             double floor = PlotDrawingData.getInstance().getFloorValue();
             if (plotStartTime < floor) {
                 int numPointsToSkip = (int) Math.round((floor - plotStartTime) / deltaT);
@@ -390,7 +576,7 @@ public class PlotUtils {
     }
 
     public static void setXscale(JMultiAxisPlot aplot) {
-        if (PlotAxes.getInstance().getXscale() == Scale.LOG) {
+        if (PlotPrefs.getInstance().getXscale() == Scale.LOG) {
             aplot.getCoordinateTransform().setXScale(AxisScale.LOG);
         } else {
             aplot.getCoordinateTransform().setXScale(AxisScale.LINEAR);
@@ -401,7 +587,7 @@ public class PlotUtils {
         aplot.setShowBorder(PlotBorderData.getInstance().isDrawPlotBorder());
         aplot.getPlotBorder().setBackgroundColor(PlotBorderData.getInstance().getBorderColor());
 
-        aplot.getPlotRegion().setDrawBox(PlotAxes.getInstance().isDrawBoxAroundPlots()); // This box is drawn around all the subplots
+        aplot.getPlotRegion().setDrawBox(PlotPrefs.getInstance().isDrawBoxAroundPlots()); // This box is drawn around all the subplots
         aplot.getPlotRegion().setBackgroundColor(PlotColors.getInstance().getBackGroundColor()); // Plot interior below subplot drawing regions.
         aplot.setPlotBorderWidthMM(PlotBorderData.getInstance().getBorderWidthMM());
     }
@@ -421,10 +607,10 @@ public class PlotUtils {
     }
 
     public static void renderTitle(JMultiAxisPlot aplot) {
-        String title = PlotAxes.getInstance().getTitle();
-        if (title != null && PlotAxes.getInstance().isShowTitle()) {
+        String title = PlotPrefs.getInstance().getTitle();
+        if (title != null && PlotPrefs.getInstance().isShowTitle()) {
             aplot.getTitle().setText(title);
-            aplot.getTitle().setFontSize(PlotAxes.getInstance().getTitleFontSize());
+            aplot.getTitle().setFontSize(PlotPrefs.getInstance().getTitleFontSize());
         }
 
     }
@@ -541,14 +727,6 @@ public class PlotUtils {
             if (min <= PlotDrawingData.getInstance().getFloorValue()) {
                 min = (float) PlotDrawingData.getInstance().getFloorValue();
             }
-            int v = (int) Math.floor(Math.log10(min));
-            min = (float) Math.pow(10.0, v);
-            v = (int) Math.round(Math.ceil(Math.log10(max)));
-            max = (float) Math.pow(10.0, v);
-        } else {
-            TickMetrics ticks = PlotAxis.defineAxis(min, max);
-            max = ticks.getMax();
-            min = ticks.getMin();
         }
         subplot.getXaxis().setMin(min);
         subplot.getXaxis().setMax(max);
@@ -609,7 +787,7 @@ public class PlotUtils {
     }
 
     public static void maybeSetYlimits(JSubplot subplot) {
-        Ylimits ylimits = PlotAxes.getInstance().getYlimits();
+        Ylimits ylimits = PlotPrefs.getInstance().getYlimits();
         if (ylimits.isLimitsOn()) {
             PairT<Double, Double> range = ylimits.nextLimit();
             if (range != null) {
@@ -705,7 +883,8 @@ public class PlotUtils {
             Map<Line, SacTraceData> lineDataMap,
             Map<VPickLine, PickData> vplDataMap,
             PickCreationInfo pci,
-            double markerCorrection) {
+            double markerCorrection,
+            JMultiAxisPlot.XAxisType type) {
         JSubplot subplot = pci.getOwningPlot();
         PlotObject po = pci.getSelectedObject();
         if (po instanceof Line) {
@@ -720,8 +899,9 @@ public class PlotUtils {
                     if (phaseInfo != null) {
                         int value = phaseInfo.getTIndex();
                         Double v = sacData.getSACHeader().getT(value);
-                        if (v == null) { // no existing pick so we have to create a VPickLine object
-                            sacData.getSACHeader().setT(value, pointerXvalue - markerCorrection);
+                        if (v == null) {        // no existing pick so we have to create a VPickLine object
+                            double appliedCorrection = getAppliedCorrection(type, sacData, markerCorrection);
+                            sacData.getSACHeader().setT(value, pointerXvalue - appliedCorrection);
                             sacData.getSACHeader().setKt(value, phase);
                             VPickLine vpl = PlotUtils.addSingleTimePick(pointerXvalue, phase, subplot, 0);
                             PickData pd = new PickData(subplot, vpl, sacData, "T" + value);
@@ -744,6 +924,15 @@ public class PlotUtils {
                 aPlot.setMouseMode(MouseMode.SELECT_ZOOM);
             }
         }
+    }
+
+    private static double getAppliedCorrection(JMultiAxisPlot.XAxisType type, SacTraceData sacData, double markerCorrection) {
+        Double reftime = sacData.getReferenceTime();
+        if (reftime == null) {
+            reftime = 0.0;
+        }
+        double localCorrection = type == JMultiAxisPlot.XAxisType.EpochTime ? reftime : markerCorrection;
+        return localCorrection;
     }
 
     private static PickData getExistingPickData(Map<VPickLine, PickData> vplDataMap, String string, SacTraceData sacData) {
@@ -782,16 +971,28 @@ public class PlotUtils {
         return result;
     }
 
-    private static List<String> createTextFields(Type type, SacTraceData sacData, SacTraceData referenceSacData, Location location) {
+    public static void verifyAllRequiredMarkersSet(List<SacTraceData> data, String markerName) throws IllegalArgumentException {
+        boolean hasProblems = false;
+        for (SacTraceData std : data) {
+            Double value = (Double) std.getSACHeader().getValue(markerName);
+            if (value == null) {
+                String msg = String.format("Field (%s) is not set in %s!", markerName, std.getFilename());
+                hasProblems = true;
+                ApplicationLogger.getInstance().log(Level.SEVERE, msg);
+            }
+        }
+        if (hasProblems) {
+            throw new IllegalArgumentException("Required time field not set in one or more files!");
+        }
+    }
+
+    private static List<String> createTextFields(Type type, SacTraceData sacData, SacTraceData referenceSacData, double reftimeAdjustment) {
         List<String> fields = FileIDInfo.getInstance().getHdrlist();
         if (type == Type.DEFAULT) {
             fields = FileIDInfo.getDefaultHdrlist();
         } else if (type == Type.NAME) {
             fields = new ArrayList<>();
             fields.add(sacData.getFilename().getFileName().toString());
-        }
-        if (location == Location.LL || location == Location.LR) {
-            Collections.reverse(fields);
         }
 
         List<String> result = new ArrayList<>();
@@ -800,9 +1001,9 @@ public class PlotUtils {
             if (sacData.getSACHeader().isHeaderField(field)) {
                 Object obj = sacData.getSACHeader().getValue(field);
                 if (field.equalsIgnoreCase("KZDATE") && referenceSacData != null) {
-                    obj = referenceSacData.getSACHeader().getValue(field);
+                    obj = referenceSacData.getSACHeader().getValue(field, reftimeAdjustment);
                 } else if (field.equalsIgnoreCase("KZTIME") && referenceSacData != null) {
-                    obj = referenceSacData.getSACHeader().getValue(field);
+                    obj = referenceSacData.getSACHeader().getValue(field, reftimeAdjustment);
                 }
                 if (obj != null) {
                     String text = createTextString(field, obj, FileIDInfo.getInstance().getFormat());
@@ -816,4 +1017,77 @@ public class PlotUtils {
         return result;
     }
 
+    public static void maybeDisplayPLabels(JSubplot aSubplot) {
+        if (PlotPrefs.getInstance().isShowPLabels()) {
+            Collection<Collection<FractionalPinnedText>> collections = buildBractionalPinnedTextCollection();
+            //Pinned text that belongs together should be used to create a single FractionalPinnedText object with multiple Strings.
+            // That allows proper spacing no matter what font size or screen resolution is chosen.
+            coaleseAndPlotFractionPinedTextCollections(aSubplot, collections);
+        }
+    }
+
+    private static void coaleseAndPlotFractionPinedTextCollections(JSubplot aSubplot, Collection<Collection<FractionalPinnedText>> collections) {
+        for (Collection<FractionalPinnedText> cfpt : collections) {
+            FractionalPinnedText leading = null;
+            Collection<String> strings = new ArrayList<>();
+            for (FractionalPinnedText fpt : cfpt) {
+                strings.add(fpt.getText());
+                if (leading == null) {
+                    leading = fpt;
+                }
+            }
+            if (leading != null) {
+                FractionalPinnedText combined = new FractionalPinnedText(
+                        leading.getxFraction(),//x
+                        leading.getyFraction(),//y,
+                        strings,
+                        HorizPinEdge.LEFT,
+                        VertPinEdge.TOP,
+                        leading.getFontName(),
+                        leading.getFontSize(),
+                        leading.getColor(),
+                        HorizAlignment.LEFT,
+                        VertAlignment.BOTTOM
+                );
+                aSubplot.AddPlotObject(combined);
+            }
+        }
+    }
+
+    private static Collection<Collection<FractionalPinnedText>> buildBractionalPinnedTextCollection() {
+        List<PLabel> plabels = PlotPrefs.getInstance().getpLabels();
+        Collection<Collection<FractionalPinnedText>> collections = new ArrayList<>();
+        Collection<FractionalPinnedText> currentCollection = null;
+        for (PLabel label : plabels) {
+            FractionalPinnedText fpt = new FractionalPinnedText(label.getxValue(),
+                    label.getyValue(),
+                    label.getLabelText(),
+                    HorizPinEdge.LEFT,
+                    VertPinEdge.TOP,
+                    label.getFontName(),
+                    label.getFontSize(),
+                    label.getTextColor(),
+                    HorizAlignment.LEFT,
+                    VertAlignment.BOTTOM);
+            if (label.getyValue() >= 0) { // Start of new set of labels.
+                currentCollection = new ArrayList<>();
+                currentCollection.add(fpt);
+                collections.add(currentCollection);
+            } else if (currentCollection != null) {
+                currentCollection.add(fpt);
+            }
+
+        }
+        return collections;
+    }
+
+    public static void setXaxisTickLabelSize(PlotPanel panel) {
+        int tickFontSize = PlotPrefs.getInstance().getXlabelTickFontSize();
+        panel.getXaxis().setTickFontSize(tickFontSize);
+    }
+
+    public static void setYaxisTickLabelSize(JSubplot subplot) {
+        int tickFontSize = PlotPrefs.getInstance().getYlabelTickFontSize();
+        subplot.getYaxis().setTickFontSize(tickFontSize);
+    }
 }

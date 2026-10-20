@@ -50,20 +50,8 @@ public class HistorySacCommand implements SacCommand {
 
     @Override
     public Collection<String> getCommandNames() {
-        String[] names = {"H", "HISTORY"};
+        String[] names = {"HIST", "HISTORY"};
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	prints a list of the recently issued SAC commands\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	HISTORY\n"
-                + "INPUT\n"
-                + "	none\n"
-                + "DEFAULT VALUES\n"
-                + "	none";
-    }
 }

@@ -24,9 +24,9 @@ package gov.llnl.gnem.jsac.io;
 
 import java.util.Objects;
 
-import llnl.gnem.dftt.core.util.StreamKey;
-import llnl.gnem.dftt.core.util.TimeT;
-import llnl.gnem.dftt.core.waveform.seismogram.CssSeismogram;
+import llnl.gnem.core.util.StreamKey;
+import llnl.gnem.core.util.TimeT;
+import llnl.gnem.core.waveform.seismogram.CssSeismogram;
 
 /**
  *

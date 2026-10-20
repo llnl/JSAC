@@ -62,12 +62,4 @@ public class CdSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Changes the current working directory.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	CD newDirectoryName \n";
-    }
 }

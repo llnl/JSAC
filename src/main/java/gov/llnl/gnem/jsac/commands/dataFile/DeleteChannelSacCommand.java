@@ -67,23 +67,6 @@ public class DeleteChannelSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Deletes one or more files from the file list.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	[D]ELETE[C]HANNEL ALL\n"
-                + "or:\n"
-                + "\n"
-                + "	[D]ELETE[C]HANNEL filename|filenumber|range {filename|filenumber|range ... }\n"
-                + "INPUT\n"
-                + "	ALL:		Deletes all files from memory. The user need not specify filenames or filenumbers\n"
-                + "	filename:	Name of a file in the file list.\n"
-                + "	filenumber:	Number of a specific file in the file list. The first file in the list is 1, the second is 2, etc. \n"
-                + "	range:		Two file numbers separated by a dash: eg. 11-20.";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = {"DC", "DELETECHANNEL"};
         return new ArrayList<>(Arrays.asList(names));

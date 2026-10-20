@@ -109,35 +109,6 @@ public class ReadAlphaSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "Reads data from on disk into memory.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "READ [options] [filelist]\n"
-                + "where options is one or more of the following:\n"
-                + "\n"
-                + "MORE\n"
-                + "DIR CURRENT|name\n"
-                + "ALL options must preceed any element in the filelist.\n"
-                + "\n"
-                + "INPUT\n"
-                + "	MORE:	\n"
-                + "		Place the new data files in memory AFTER the old ones. If this option is omitted, the new data files REPLACE the old ones.\n"
-                + "\n"
-                + "\n"
-                + "	DIR CURRENT:	\n"
-                + "		Read all simple filenames (with or without wildcards) from the current directory. This is the directory from which you started SAC.\n"
-                + "\n"
-                + "	DIR name:	\n"
-                + "		Read all simple filenames (with or without wildcards) from the directory called name. This may be a relative or absolute directory name.\n"
-                + "\n"
-                + "\n"
-                + "	file:	\n"
-                + "		A legal filename. This may be a simple filename or a pathname. The pathname can be a relative or absolute one. See the DESCRIPTION and EXAMPLES sections below for more details.";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = { "RA", "READALPHA" };
         return new ArrayList<>(Arrays.asList(names));

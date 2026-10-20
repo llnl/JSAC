@@ -20,7 +20,6 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.transfer;
 
 import static tec.units.ri.unit.Units.METRE;
@@ -33,8 +32,11 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,6 +52,7 @@ import com.isti.jevalresp.ResponseUnits;
 import com.isti.jevalresp.UnitsStatus;
 
 import gov.llnl.gnem.jsac.SacDataModel;
+import gov.llnl.gnem.jsac.dataAccess.ExternalWaveformServiceProvider;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.io.enums.DepVarType;
 import gov.llnl.gnem.response.ChannelMatchPolicyHolder;
@@ -58,17 +61,20 @@ import gov.llnl.gnem.response.FreqLimits;
 import gov.llnl.gnem.response.InverseTransferFunction;
 import gov.llnl.gnem.response.ResponseMetaData;
 import gov.llnl.gnem.response.ResponseMetadataExtension;
+import gov.llnl.gnem.response.ResponseTypeChecker;
+import gov.llnl.gnem.response.ResponseType;
 import gov.llnl.gnem.response.ResponseUnitsException;
 import gov.llnl.gnem.response.TransferData;
 import gov.llnl.gnem.response.TransferFunctionProcessor;
 import gov.llnl.gnem.response.TransferFunctionUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import llnl.gnem.dftt.core.util.SeriesMath;
-import llnl.gnem.dftt.core.util.StreamKey;
-import llnl.gnem.dftt.core.util.TimeT;
-import llnl.gnem.dftt.core.waveform.seismogram.CssSeismogram;
+import llnl.gnem.core.dataObjects.DataAccessException;
+import llnl.gnem.core.util.ApplicationLogger;
+import llnl.gnem.core.util.Epoch;
+import llnl.gnem.core.util.SeriesMath;
+import llnl.gnem.core.util.StreamKey;
+import llnl.gnem.core.util.TimeT;
+import llnl.gnem.core.waveform.seismogram.CssSeismogram;
+import llnl.gnem.core.responseProcessing.RESPFile;
 
 /**
  *
@@ -80,6 +86,7 @@ public class TransferProcessor {
 
     private final Map<StreamKey, File> keyFileMap;
     private final List<DatabaseTransferService> transferServices = new CopyOnWriteArrayList<>();
+
     private TransferProcessor() {
         keyFileMap = new HashMap<>();
         ServiceLoader<DatabaseTransferService> databaseTransferServices = ServiceLoader.load(DatabaseTransferService.class);
@@ -92,87 +99,86 @@ public class TransferProcessor {
         return TransferProcessorHolder.INSTANCE;
     }
 
-    public void transfer(ResponseType fromType, ResponseType toType, FreqLimits freqLimits, ResponseOptions fromResponseOptions, Path fromFilePath, ResponseOptions toResponseOptions, Path toFilePath,
+    public void transfer(SacResponseType fromType, SacResponseType toType, FreqLimits freqLimits, ResponseOptions fromResponseOptions, Path fromFilePath, ResponseOptions toResponseOptions, Path toFilePath,
             StreamKey substituteKey, Double substituteTime) throws FileNotFoundException {
-        if (fromType == ResponseType.POLEZERO && fromResponseOptions != null && fromResponseOptions.getFilename() == null) {
+        if (fromType == SacResponseType.POLEZERO && fromResponseOptions != null && fromResponseOptions.getFilename() == null) {
             String pattern = "SAC_PZs_.+_.+_.+_.+_.+";
-            int[] positions = { 2, 3, 4, 5 };
+            int[] positions = {2, 3, 4, 5};
             populateKeyFileMap(fromResponseOptions.getSearchDir(), pattern, "_", positions);
-        } else if (fromType == ResponseType.EVALRESP && fromResponseOptions != null && fromResponseOptions.getFilename() == null) {
+        } else if (fromType == SacResponseType.EVALRESP && fromResponseOptions != null && fromResponseOptions.getFilename() == null) {
             String pattern = "RESP\\..+\\..+\\.*\\..+";
-            int[] positions = { 1, 2, 4, 3 };
+            int[] positions = {1, 2, 4, 3};
             populateKeyFileMap(fromResponseOptions.getSearchDir(), pattern, "\\.", positions);
         }
         long start = System.currentTimeMillis();
 
         SacDataModel.getInstance()
-                    .getData()
-                    .parallelStream()
-                    .forEach(std -> processOneTrace(std, fromType, toType, freqLimits, fromResponseOptions, fromFilePath, toResponseOptions, toFilePath, substituteKey, substituteTime));
+                .getData()
+                .parallelStream()
+                .forEach(std -> processOneTrace(std, fromType, toType, freqLimits, fromResponseOptions, fromFilePath, toResponseOptions, toFilePath, substituteKey, substituteTime));
         long end = System.currentTimeMillis();
         double elapsed = (end - start) / 1000.0;
         log.info(String.format("Transfer executed in %4.1f seconds.", elapsed));
     }
 
-    private void processOneTrace(SacTraceData std, ResponseType fromType, ResponseType toType, FreqLimits freqLimits, ResponseOptions fromResponseOptions, Path fromFilePath,
+    private void processOneTrace(SacTraceData std, SacResponseType fromType, SacResponseType toType, FreqLimits freqLimits, ResponseOptions fromResponseOptions, Path fromFilePath,
             ResponseOptions toResponseOptions, Path toFilePath, StreamKey substituteKey, Double substituteTime) {
         try {
             DepVarType dtype = DepVarType.IUNKN;
             CssSeismogram s = std.produceSeismogram(substituteKey, substituteTime);
-            log.info("Processing: " + s.toString());
             Unit<?> requestedUnits = ResponseUnits.NANOMETER;
             TransferData from = getFromTransferFunction(s, fromType, fromResponseOptions, fromFilePath);
             TransferData to = null;
             switch (toType) {
-            case POLEZERO:
-            case EVALRESP:
-            case CSS:
-                to = getFromTransferFunction(s, toType, toResponseOptions, toFilePath);
-                break;
-            case ACC:
-                break;
-            case DBASE:
-                break;
-            case DIS:
-                break;
-            case FAPFILE:
-                break;
-            case NONE:
-                break;
-            case VEL:
-                break;
-            default:
-                break;
+                case POLEZERO:
+                case EVALRESP:
+                case CSS:
+                    to = getFromTransferFunction(s, toType, toResponseOptions, toFilePath);
+                    break;
+                case ACC:
+                    break;
+                case DBASE:
+                    break;
+                case DIS:
+                    break;
+                case FAPFILE:
+                    break;
+                case NONE:
+                    break;
+                case VEL:
+                    break;
+                default:
+                    break;
             }
             if (from == null && to == null) {
                 return;
             } else if ((from != null) && (requestedUnitsAreDerivable(from.getWorkingUnits().getInputUnits(), toType) && to == null)) {
                 switch (toType) {
-                case NONE:
-                case DIS:
-                    requestedUnits = ResponseUnits.NANOMETER;
-                    dtype = DepVarType.IDISP;
-                    break;
-                case VEL:
-                    requestedUnits = ResponseUnits.NANOMETER_PER_SECOND;
-                    dtype = DepVarType.IVEL;
-                    break;
-                case ACC:
-                    requestedUnits = ResponseUnits.NANOMETER_PER_SQUARE_SECOND;
-                    dtype = DepVarType.IACC;
-                    break;
-                case CSS:
-                    break;
-                case DBASE:
-                    break;
-                case EVALRESP:
-                    break;
-                case FAPFILE:
-                    break;
-                case POLEZERO:
-                    break;
-                default:
-                    break;
+                    case NONE:
+                    case DIS:
+                        requestedUnits = ResponseUnits.NANOMETER;
+                        dtype = DepVarType.IDISP;
+                        break;
+                    case VEL:
+                        requestedUnits = ResponseUnits.NANOMETER_PER_SECOND;
+                        dtype = DepVarType.IVEL;
+                        break;
+                    case ACC:
+                        requestedUnits = ResponseUnits.NANOMETER_PER_SQUARE_SECOND;
+                        dtype = DepVarType.IACC;
+                        break;
+                    case CSS:
+                        break;
+                    case DBASE:
+                        break;
+                    case EVALRESP:
+                        break;
+                    case FAPFILE:
+                        break;
+                    case POLEZERO:
+                        break;
+                    default:
+                        break;
                 }
                 if (!requestedUnits.equals(from.getWorkingUnits().getInputUnits())) {
                     try {
@@ -189,6 +195,8 @@ public class TransferProcessor {
             log.info("Done.\n");
         } catch (FileNotFoundException ex) {
             log.warn("Failed to find specified response file!");
+        } catch (DataAccessException ex) {
+            log.warn("Data Access Exception while retrieving seismogram data!");
         }
     }
 
@@ -240,39 +248,115 @@ public class TransferProcessor {
         return result;
     }
 
-    private TransferData getFromTransferFunction(CssSeismogram s, ResponseType fromType, ResponseOptions responseOptions, Path fromFilePath) throws FileNotFoundException {
+    private TransferData getFromTransferFunction(CssSeismogram s, SacResponseType fromType, ResponseOptions responseOptions, Path fromFilePath) throws DataAccessException, FileNotFoundException {
         StreamKey key = s.getStreamKey();
         ChannelMatchPolicy policy = ChannelMatchPolicyHolder.getInstance().getPolicy();
 
         switch (fromType) {
-        case NONE:
-            return null;
-        case EVALRESP:
-            return EvalrespProcessor.getTransferFunction(responseOptions, key, s, policy, keyFileMap);
-        case POLEZERO: {
-            return PoleZeroProcessor.getTransferFunction(responseOptions, key, s, policy, keyFileMap);
-        }
-        case FAPFILE:
-            System.out.println("Not implemented yet");
-            return null;
-        case CSS:
-            return getCssFromTransferFunction(fromFilePath, s, policy);
-        case DBASE: {
-            for (DatabaseTransferService service : transferServices) {
-                TransferData transferFunction = service.getFromTransfer(responseOptions, key, s, policy, keyFileMap);
-                if (transferFunction != null) {
-                    return transferFunction;
+            case NONE:
+                return null;
+            case DATA_SERVICE: {
+                return getFromTransferFunctionFromService(key, s, policy);
+            }
+            case EVALRESP:
+                return EvalrespProcessor.getTransferFunction(responseOptions, key, s, policy, keyFileMap);
+            case POLEZERO: {
+                return PoleZeroProcessor.getTransferFunction(responseOptions, s, policy);
+            }
+            case FAPFILE:
+                System.out.println("Not implemented yet");
+                return null;
+            case CSS:
+                return getCssFromTransferFunction(fromFilePath, s, policy);
+            case DBASE: {
+                for (DatabaseTransferService service : transferServices) {
+                    TransferData transferFunction = service.getFromTransfer(responseOptions, key, s, policy, keyFileMap);
+                    if (transferFunction != null) {
+                        return transferFunction;
+                    }
                 }
             }
+            case ACC:
+                break;
+            case DIS:
+                break;
+            case VEL:
+                break;
+            default:
+                break;
         }
-        case ACC:
-            break;
-        case DIS:
-            break;
-        case VEL:
-            break;
-        default:
-            break;
+        return null;
+    }
+
+    public TransferData getFromTransferFunctionFromService(StreamKey key, CssSeismogram s, ChannelMatchPolicy policy) throws DataAccessException, IllegalStateException {
+        if (!ExternalWaveformServiceProvider.getInstance().getCurrentService().keyMeetsRequirements(key)) {
+            return null;
+        } else {
+            try {
+                ResponseOptions responseOptions = getResponseOptionsFromService(key, s.getEpoch());
+                if (responseOptions != null) {
+                    ResponseType aType = responseOptions.getResponseType();
+                    if (aType != null) {
+                        switch (aType) {
+                            case EVRESP:
+                                return EvalrespProcessor.getTransferFunction(responseOptions, key, s, policy, keyFileMap);
+                            case CSS:
+                            case FAP:
+                            case FIRFAP:
+                            case PAZ:
+                            case PAZFAP:
+                            case PAZFIR:
+                                return getCssFromTransferFunction(Path.of(responseOptions.getFilename()), s, policy);
+                            case SACPZF:
+                                return PoleZeroProcessor.getTransferFunction(responseOptions, s, policy);
+                            default:
+                                ApplicationLogger.getInstance().log(Level.WARNING, "Unknown or unhandled response type " + aType);
+                                return null;
+                        }
+                    }
+                } else {
+                    ApplicationLogger.getInstance().log(Level.WARNING, "Unable to retrieve response for: " + s);
+                    return null;
+                }
+            } catch (IOException ex) {
+                ApplicationLogger.getInstance().log(Level.SEVERE, "IO exception occurred retrieving response for" + s, ex);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public TransferData getFromTransferFunctionFromPath(Path path, CssSeismogram s, ChannelMatchPolicy policy) throws DataAccessException, IllegalStateException {
+        try {
+            ResponseOptions responseOptions = getResponseOptionsFromResponseFile(path);
+            if (responseOptions != null) {
+                ResponseType aType = responseOptions.getResponseType();
+                if (aType != null) {
+                    switch (aType) {
+                        case EVRESP:
+                            StreamKey key = makeKeyFromPath(path);
+                            CssSeismogram s2 = new CssSeismogram(s.getWaveformID(), key, s.getData(), s.getSamprate(), s.getTime(), null, null);
+                            return EvalrespProcessor.getTransferFunction(responseOptions, key, s2, policy, keyFileMap);
+                        case CSS:
+                        case FAP:
+                        case FIRFAP:
+                        case PAZ:
+                        case PAZFAP:
+                        case PAZFIR:
+                            return getCssFromTransferFunction(Path.of(responseOptions.getFilename()), s, policy);
+                        case SACPZF:
+                            return PoleZeroProcessor.getTransferFunction(responseOptions, s, policy);
+                        default:
+                            ApplicationLogger.getInstance().log(Level.WARNING, "Unknown or unhandled response type " + aType);
+                            return null;
+                    }
+                }
+            } else {
+                ApplicationLogger.getInstance().log(Level.WARNING, "Unable to retrieve response for: " + s);
+                return null;
+            }
+        } catch (Exception ex) {
+            throw new DataAccessException(ex.getMessage());
         }
         return null;
     }
@@ -282,7 +366,7 @@ public class TransferProcessor {
             throw new IllegalStateException("CSS option requires specification of a file name!");
         } else {
             Unit<?> forcedInputUnits = ResponseUnits.NANOMETER;
-            gov.llnl.gnem.response.ResponseType responseType = gov.llnl.gnem.response.ResponseType.CSS;
+            ResponseType responseType = ResponseType.CSS;
 
             String network = null;
             String sta = null;
@@ -351,23 +435,23 @@ public class TransferProcessor {
         return result;
     }
 
-    private boolean requestedUnitsAreDerivable(Unit<? extends Quantity<?>> inUnit, ResponseType toType) {
+    private boolean requestedUnitsAreDerivable(Unit<? extends Quantity<?>> inUnit, SacResponseType toType) {
         if (inUnit == null) {
             return false;
         }
         switch (toType) {
-        case NONE:
-        case VEL:
-        case ACC:
-        case DIS: {
-            return (inUnit.isCompatible(METRE) || inUnit.isCompatible(METRE_PER_SECOND) || inUnit.isCompatible(METRE_PER_SQUARE_SECOND));
-        }
-        case EVALRESP:
-        case POLEZERO:
-        case FAPFILE:
-        case CSS:
-        case DBASE:
-            return false;
+            case NONE:
+            case VEL:
+            case ACC:
+            case DIS: {
+                return (inUnit.isCompatible(METRE) || inUnit.isCompatible(METRE_PER_SECOND) || inUnit.isCompatible(METRE_PER_SQUARE_SECOND));
+            }
+            case EVALRESP:
+            case POLEZERO:
+            case FAPFILE:
+            case CSS:
+            case DBASE:
+                return false;
         }
         return false;
     }
@@ -396,6 +480,37 @@ public class TransferProcessor {
         String chan = tokens[positions[2]];
         String locid = tokens[positions[3]];
         return new StreamKey(net, sta, chan, locid);
+    }
+
+    private ResponseOptions getResponseOptionsFromService(StreamKey key, Epoch epoch) throws DataAccessException {
+        Path path = ExternalWaveformServiceProvider.getInstance().getCurrentService().retrieveResponseFile(key.getAgency(),
+                key.getNet(), key.getSta(), key.getChan(), key.getLocationCode(), epoch);
+        if (path != null) {
+            Path parent = path.getParent();
+            ResponseType type = ResponseTypeChecker.determineResponseType(path.toString());
+            return new ResponseOptions(type, path.toString(), parent);
+        } else {
+            return null;
+        }
+    }
+
+    private ResponseOptions getResponseOptionsFromResponseFile(Path path) throws DataAccessException {
+        if (path != null) {
+            Path parent = path.getParent();
+            ResponseType type = ResponseTypeChecker.determineResponseType(path.toString());
+            return new ResponseOptions(type, path.toString(), parent);
+        } else {
+            return null;
+        }
+    }
+
+    private StreamKey makeKeyFromPath(Path path) throws IOException {
+        RESPFile rf = new RESPFile(path);
+        String network = rf.getNet();
+        String station = rf.getSta();
+        String chan = rf.getChan();
+        String locid = rf.getLoc();
+        return new StreamKey(network, station, chan, locid);
     }
 
     private static class FileFilter implements FilenameFilter {

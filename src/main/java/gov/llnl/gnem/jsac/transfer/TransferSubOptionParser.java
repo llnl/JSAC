@@ -31,7 +31,9 @@ import java.util.Map;
 
 import gov.llnl.gnem.jsac.util.PathManager;
 import gov.llnl.gnem.response.FreqLimits;
-import llnl.gnem.dftt.core.util.FileUtil.DriveMapper;
+import gov.llnl.gnem.response.ResponseType;
+import gov.llnl.gnem.response.ResponseTypeChecker;
+import llnl.gnem.core.util.FileUtil.DriveMapper;
 
 /**
  *
@@ -58,21 +60,23 @@ public class TransferSubOptionParser {
         String filename = null;
         Path searchDir = maybeGetSearchDir(values);
         if (values.size() < 2) { //Search current directory forPZ files
-            return new ResponseOptions(filename, searchDir);
+            return new ResponseOptions(null,filename, searchDir);
         }
+        ResponseType type = null;
         filename = maybeGetSubtype(values);
-
-        return new ResponseOptions(filename, searchDir);
+        if (filename != null) {
+             type = ResponseTypeChecker.determineResponseType(filename);
+        }
+        return new ResponseOptions(type, filename, searchDir);
     }
 
     public static ResponseOptions getToOptions(List<Object> values) {
         Path searchDir = maybeGetSearchDir(values);
         String filename = maybeGetSubtype(values);
         if (filename == null) {
-            System.out.println("File name must be specified!");
             throw new IllegalStateException("File name must be specified!");
         }
-        return new ResponseOptions(filename, searchDir);
+        return new ResponseOptions(null,filename, searchDir);
     }
 
     public static String maybeGetSubtype(List<Object> values) {

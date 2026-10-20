@@ -28,7 +28,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 
 import gov.llnl.gnem.jsac.plots.SharedPlotPanel;
-import llnl.gnem.dftt.core.gui.util.Utility;
+import llnl.gnem.core.gui.util.Utility;
 
 /**
  *

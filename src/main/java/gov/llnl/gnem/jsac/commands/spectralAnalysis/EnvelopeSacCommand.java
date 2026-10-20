@@ -50,19 +50,4 @@ public class EnvelopeSacCommand implements SacCommand {
         String[] names = {"ENVELOPE"};
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Computes the envelope function using a Hilbert transform.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	ENVELOPE\n"
-                + "DESCRIPTION\n"
-                + "	This command computes the envelope function of the data in memory. \n"
-                + "	The envelope is defined by the square root of x(n)^2 + y(n)^2, \n"
-                + "	where x(n) is the original signal and y(n) its Hilbert transform \n"
-                + "	(see HILBERT). As with HILBERT, very long period data should be \n"
-                + "	decimated (see DECIMATE) prior to processing.";
-    }
 }

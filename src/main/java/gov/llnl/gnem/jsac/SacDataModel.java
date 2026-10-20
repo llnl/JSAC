@@ -54,9 +54,14 @@ import gov.llnl.gnem.jsac.dataAccess.dataObjects.SpectralData;
 import gov.llnl.gnem.jsac.io.SACHeader;
 import gov.llnl.gnem.jsac.util.PartialDataWindow;
 import gov.llnl.gnem.jsac.util.SacHeaderComparator;
-import llnl.gnem.dftt.core.signalprocessing.filter.FilterDesign;
-import llnl.gnem.dftt.core.util.PairT;
-import llnl.gnem.dftt.core.util.TaperType;
+import java.util.logging.Level;
+import llnl.gnem.core.correlation.RealSequenceCorrelator;
+import llnl.gnem.core.correlation.util.CorrelationMax;
+import llnl.gnem.core.signalprocessing.filter.FilterDesign;
+import llnl.gnem.core.util.ApplicationLogger;
+import llnl.gnem.core.util.Epoch;
+import llnl.gnem.core.util.PairT;
+import llnl.gnem.core.util.TaperType;
 
 /**
  *
@@ -70,6 +75,14 @@ public class SacDataModel {
 
     private SacDataModel() {
         traces = new ArrayList<>();
+    }
+
+    public int size() {
+        return traces.size();
+    }
+
+    public boolean isEmpty() {
+        return traces.isEmpty();
     }
 
     public void clear() {
@@ -401,7 +414,7 @@ public class SacDataModel {
         }
     }
 
-    public void changeHeaderValues(List<Integer> fileNumbers, List<PairT<String, Object>> newValues, Double allTValue) {
+    public void changeHeaderValues(List<Integer> fileNumbers, List<PairT<String, Object>> newValues, Double allTValue, String newAgency) {
         List<SacTraceData> tracesToProcess = new ArrayList<>();
         if (fileNumbers.isEmpty()) {
             tracesToProcess.addAll(traces);
@@ -413,6 +426,9 @@ public class SacDataModel {
             }
         }
         for (SacTraceData std : tracesToProcess) {
+            if (newAgency != null) {
+                std.setAgency(newAgency);
+            }
             for (PairT<String, Object> pair : newValues) {
                 std.getSACHeader().setHeaderValue(pair.getFirst(), pair.getSecond());
                 if (pair.getFirst().toUpperCase().equals("KSTNM")) {
@@ -543,13 +559,86 @@ public class SacDataModel {
         return null;
     }
 
+    public void synchronize(boolean begin, boolean round) {
+        if (traces.size() < 2) {
+            ApplicationLogger.getInstance().log(Level.FINE, "There must be at least two files in memory for the synchronize command.");
+            return;
+        }
+        if (!begin) {
+            Double latestStart = getLatestStartTime();
+            for (SacTraceData std : traces) {
+                Double myRefTime = std.getReferenceTime();
+                Double diff = myRefTime - latestStart;
+                std.getSACHeader().setReferenceTime(latestStart);
+                std.getSACHeader().shiftAllT(diff);
+            }
+        } else {
+            Double earliestRefTime = getEarliestRefTime();
+            for (SacTraceData std : traces) {
+                std.getSACHeader().setReferenceTime(earliestRefTime);
+                Double beginTime = std.getBeginTimeMarker();
+                if (beginTime != null && beginTime != 0) {
+                    std.getSACHeader().shiftAllT(-beginTime);
+                }
+            }
+        }
+        if (round) {
+            for (SacTraceData std : traces) {
+                Double tmp = std.getBeginTimeMarker();
+                double rate = std.getSamprate();
+                if (rate >= 1.0) {
+                    Long rounded = Math.round(tmp * rate);
+                    double roundedBegin = (double) rounded / Math.round(rate);
+                    double difference = tmp - roundedBegin;
+                    std.getSACHeader().shiftAllT(-difference);
+                }
+            }
+        }
+    }
+
+    private Double getLatestStartTime() {
+        Double latest = Double.NEGATIVE_INFINITY;
+        for (SacTraceData std : traces) {
+            Epoch epoch = std.getEpoch();
+            if (epoch.getStart() > latest) {
+                latest = epoch.getStart();
+            }
+        }
+        return latest;
+    }
+
+    private Double getEarliestRefTime() {
+        Double earliest = Double.MAX_VALUE;
+        for (SacTraceData std : traces) {
+            if (std.getReferenceTime() < earliest) {
+                earliest = std.getReferenceTime();
+            }
+        }
+        return earliest;
+    }
+
     private static class SacDataModelHolder {
 
         private static final SacDataModel INSTANCE = new SacDataModel();
     }
 
-    public void correlate(float[] master, boolean normalize, boolean useSubwindows, int windowLength, int numberOfWindows) {
+    public void correlate(float[] master,
+            boolean normalize,
+            boolean useSubwindows,
+            int windowLength,
+            int numberOfWindows,
+            boolean statisticsOnly) {
 
+        if (statisticsOnly) {
+            for (SacTraceData std : traces) {
+                float[] v = std.getData();
+                CorrelationMax cm = RealSequenceCorrelator.correlate(master, v);
+                System.out.println(std.getFilename());
+                System.out.println(cm);
+                System.out.println("------------------------------------------------------------\n");
+            }
+            return;
+        }
         if (!useSubwindows) {
             traces.parallelStream().forEach(std -> {
                 parallelContinuousCorrelate(master, normalize, std);

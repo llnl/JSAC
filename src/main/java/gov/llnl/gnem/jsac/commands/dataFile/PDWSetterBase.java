@@ -68,7 +68,7 @@ public class PDWSetterBase {
     }
 
     public void initialize(String[] tokens) {
-        Map<String, List<Object>> parsedTokens = TokenListParser.parseTokens(descriptors, tokens, false);
+        Map<String, List<Object>> parsedTokens = TokenListParser.parseTokens(descriptors, tokens);
         if (parsedTokens.isEmpty()) {
             log.warn(childName + " command without arguments has no effect!");
             return;

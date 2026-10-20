@@ -35,6 +35,11 @@ public class NullSacCommand implements SacCommand{
     }
 
     @Override
+    public String getHelpString() {
+        return "";
+    }
+
+    @Override
     public void initialize(String[] tokens) {
         
     }

@@ -50,13 +50,4 @@ public class SqrSacCommand implements SacCommand {
         String[] names = {"SQR", "SQUARE"};
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Squares each data point.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	SQR";
-    }
 }

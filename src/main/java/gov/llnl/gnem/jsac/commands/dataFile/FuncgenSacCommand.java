@@ -20,7 +20,6 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.commands.dataFile;
 
 import java.io.IOException;
@@ -43,7 +42,6 @@ import gov.llnl.gnem.jsac.io.SACFile;
 import gov.llnl.gnem.jsac.io.SACHeader;
 import gov.llnl.gnem.jsac.io.enums.FileType;
 import gov.llnl.gnem.jsac.io.enums.Iztype;
-
 
 /**
  *
@@ -126,24 +124,24 @@ public class FuncgenSacCommand implements SacCommand {
     public void execute() {
         SacDataModel.getInstance().clear();
         switch (functionType) {
-        case IMPULSE:
-        case STEP:
-        case BOXCAR:
-        case TRIANGLE:
-        case SINE:
-        case LINE:
-        case QUADRATIC:
-        case CUBIC: {
-            SacTraceData std = createTraceData();
-            SacDataModel.getInstance().setSingleSeismogram(std);
-            break;
-        }
-        case SEIS:
-        case SEISMOGRAM: {
-            SacTraceData std = createSacFile();
-            SacDataModel.getInstance().setSingleSeismogram(std);
-            break;
-        }
+            case IMPULSE:
+            case STEP:
+            case BOXCAR:
+            case TRIANGLE:
+            case SINE:
+            case LINE:
+            case QUADRATIC:
+            case CUBIC: {
+                SacTraceData std = createTraceData();
+                SacDataModel.getInstance().setSingleSeismogram(std);
+                break;
+            }
+            case SEIS:
+            case SEISMOGRAM: {
+                SacTraceData std = createSacFile();
+                SacDataModel.getInstance().setSingleSeismogram(std);
+                break;
+            }
 
         }
     }
@@ -169,70 +167,70 @@ public class FuncgenSacCommand implements SacCommand {
     private float[] createFunction() {
         float[] data = new float[npts];
         switch (functionType) {
-        case IMPULSE: {
-            int pos = npts / 2;
-            data[pos] = 1.0f;
-            break;
-        }
-        case STEP: {
-            int pos = npts / 2;
-            for (int j = pos; j < npts; ++j) {
-                data[j] = 1.0f;
+            case IMPULSE: {
+                int pos = npts / 2;
+                data[pos] = 1.0f;
+                break;
             }
-            break;
-        }
-        case BOXCAR: {
+            case STEP: {
+                int pos = npts / 2;
+                for (int j = pos; j < npts; ++j) {
+                    data[j] = 1.0f;
+                }
+                break;
+            }
+            case BOXCAR: {
 
-            int p1 = npts / 3;
-            int p2 = 2 * npts / 3;
+                int p1 = npts / 3;
+                int p2 = 2 * npts / 3;
 
-            for (int j = p1; j < p2; ++j) {
-                data[j] = 1;
+                for (int j = p1; j < p2; ++j) {
+                    data[j] = 1;
+                }
+                break;
             }
-            break;
-        }
-        case TRIANGLE: {
-            int s = npts / 6;
-            int c = npts / 2;
+            case TRIANGLE: {
+                int s = npts / 6;
+                int c = npts / 2;
 
-            data[c] = 1.0f;
-            for (int is = 1; is < s; is++) {
-                data[c + is] = 1.0f - ((float) is / (float) s);
-                data[c - is] = data[c + is];
+                data[c] = 1.0f;
+                for (int is = 1; is < s; is++) {
+                    data[c + is] = 1.0f - ((float) is / (float) s);
+                    data[c - is] = data[c + is];
+                }
+                break;
             }
-            break;
-        }
-        case SINE: {
-            double phaseInRadians = Math.toRadians(phase);
-            for (int j = 0; j < npts; ++j) {
-                double t = j * delta;
-                data[j] = (float) Math.sin(phaseInRadians + 2 * Math.PI * frequency * t);
+            case SINE: {
+                double phaseInRadians = Math.toRadians(phase);
+                for (int j = 0; j < npts; ++j) {
+                    double t = j * delta;
+                    data[j] = (float) Math.sin(phaseInRadians + 2 * Math.PI * frequency * t);
+                }
+                break;
             }
-            break;
-        }
-        case LINE:
-            for (int j = 0; j < npts; ++j) {
-                data[j] = (float) (intercept + j * slope);
+            case LINE:
+                for (int j = 0; j < npts; ++j) {
+                    data[j] = (float) (intercept + j * slope);
+                }
+                break;
+            case QUADRATIC: {
+                for (int j = 0; j < npts; ++j) {
+                    double t = j * delta;
+                    data[j] = (float) (aCoeff * t * t + bCoeff * t + cCoeff);
+                }
             }
-            break;
-        case QUADRATIC: {
-            for (int j = 0; j < npts; ++j) {
-                double t = j * delta;
-                data[j] = (float) (aCoeff * t * t + bCoeff * t + cCoeff);
+            case CUBIC: {
+                for (int j = 0; j < npts; ++j) {
+                    double t = j * delta;
+                    data[j] = (float) (aCoeff * t * t * t + bCoeff * t * t + cCoeff * t + dCoeff);
+                }
             }
-        }
-        case CUBIC: {
-            for (int j = 0; j < npts; ++j) {
-                double t = j * delta;
-                data[j] = (float) (aCoeff * t * t * t + bCoeff * t * t + cCoeff * t + dCoeff);
-            }
-        }
-        case SEIS:
-            break;
-        case SEISMOGRAM:
-            break;
-        default:
-            break;
+            case SEIS:
+                break;
+            case SEISMOGRAM:
+                break;
+            default:
+                break;
         }
         return data;
     }
@@ -253,71 +251,73 @@ public class FuncgenSacCommand implements SacCommand {
 
     private void maybeSetBegin(List<Object> values) {
         if (values != null && values.size() == 1) {
-            Double v = (Double) values.get(0);
-            begin = v;
+            Float tmp = (Float) values.get(0);
+            if (tmp != null) {
+                begin = (Double) tmp.doubleValue();
+            }
         }
     }
 
     private void maybeSetTypeParams(List<Object> funcParams) {
 
         switch (functionType) {
-        case SINE: {
-            if (funcParams != null && funcParams.size() == 2) {
-                Float v1 = (Float) funcParams.get(0);
-                Float v2 = (Float) funcParams.get(1);
-                frequency = v1 != null ? v1 : frequency;
-                phase = v2 != null ? v2 : phase;
+            case SINE: {
+                if (funcParams != null && funcParams.size() == 2) {
+                    Float v1 = (Float) funcParams.get(0);
+                    Float v2 = (Float) funcParams.get(1);
+                    frequency = v1 != null ? v1 : frequency;
+                    phase = v2 != null ? v2 : phase;
+                }
+                break;
             }
-            break;
-        }
-        case LINE: {
-            if (funcParams != null && funcParams.size() == 2) {
-                Float v1 = (Float) funcParams.get(0);
-                Float v2 = (Float) funcParams.get(1);
-                slope = v1 != null ? v1 : slope;
-                intercept = v2 != null ? v2 : intercept;
+            case LINE: {
+                if (funcParams != null && funcParams.size() == 2) {
+                    Float v1 = (Float) funcParams.get(0);
+                    Float v2 = (Float) funcParams.get(1);
+                    slope = v1 != null ? v1 : slope;
+                    intercept = v2 != null ? v2 : intercept;
+                }
+                break;
             }
-            break;
-        }
 
-        case QUADRATIC: {
-            if (funcParams != null && funcParams.size() == 3) {
-                Float v1 = (Float) funcParams.get(0);
-                Float v2 = (Float) funcParams.get(1);
-                Float v3 = (Float) funcParams.get(2);
-                aCoeff = v1 != null ? v1 : aCoeff;
-                bCoeff = v2 != null ? v2 : bCoeff;
-                cCoeff = v3 != null ? v3 : cCoeff;
+            case QUADRATIC: {
+                if (funcParams != null && funcParams.size() == 3) {
+                    Float v1 = (Float) funcParams.get(0);
+                    Float v2 = (Float) funcParams.get(1);
+                    Float v3 = (Float) funcParams.get(2);
+                    aCoeff = v1 != null ? v1 : aCoeff;
+                    bCoeff = v2 != null ? v2 : bCoeff;
+                    cCoeff = v3 != null ? v3 : cCoeff;
+                }
+                break;
             }
-            break;
-        }
-        case CUBIC: {
-            if (funcParams != null && funcParams.size() == 4) {
-                Float v1 = (Float) funcParams.get(0);
-                Float v2 = (Float) funcParams.get(1);
-                Float v3 = (Float) funcParams.get(2);
-                Float v4 = (Float) funcParams.get(3);
-                aCoeff = v1 != null ? v1 : aCoeff;
-                bCoeff = v2 != null ? v2 : bCoeff;
-                cCoeff = v3 != null ? v3 : cCoeff;
-                dCoeff = v4 != null ? v4 : dCoeff;
+            case CUBIC: {
+                if (funcParams != null && funcParams.size() == 4) {
+                    Float v1 = (Float) funcParams.get(0);
+                    Float v2 = (Float) funcParams.get(1);
+                    Float v3 = (Float) funcParams.get(2);
+                    Float v4 = (Float) funcParams.get(3);
+                    aCoeff = v1 != null ? v1 : aCoeff;
+                    bCoeff = v2 != null ? v2 : bCoeff;
+                    cCoeff = v3 != null ? v3 : cCoeff;
+                    dCoeff = v4 != null ? v4 : dCoeff;
+                }
+                break;
             }
-            break;
-        }
-        case BOXCAR:
-            break;
-        case IMPULSE:
-            break;
-        case SEIS:
-            break;
-        case SEISMOGRAM:
-            break;
-        case STEP:
-            break;
-        case TRIANGLE:
-            break;
-        default:
-            break;
+            case BOXCAR:
+                break;
+            case IMPULSE:
+                break;
+            case SEIS:
+                break;
+            case SEISMOGRAM:
+                break;
+            case STEP:
+                break;
+            case TRIANGLE:
+                break;
+            default:
+                break;
         }
     }
 
@@ -334,28 +334,8 @@ public class FuncgenSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Generates a function and stores it in memory.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	FUNCGEN {type},{DELTA v},{NPTS n},{BEGIN v}\n"
-                + "where type is one of the following:\n"
-                + "\n"
-                + "	IMPULSE\n"
-                + "	STEP\n"
-                + "	BOXCAR\n"
-                + "	TRIANGLE\n"
-                + "	SINE {frequency phase}\n"
-                + "	LINE {slope intercept}\n"
-                + "	QUADRATIC {a b c}\n"
-                + "	CUBIC {a b c d}\n"
-                + "	SEISMOGRAM";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
-        String[] names = { "FG", "FUNCGEN" };
+        String[] names = {"FG", "FUNCGEN"};
         return new ArrayList<>(Arrays.asList(names));
     }
 }

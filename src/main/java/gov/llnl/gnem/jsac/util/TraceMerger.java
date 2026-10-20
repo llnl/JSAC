@@ -32,8 +32,8 @@ import java.util.TreeMap;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.io.SACFile;
 import gov.llnl.gnem.jsac.io.SACHeader;
-import llnl.gnem.dftt.core.util.SeriesMath;
-import llnl.gnem.dftt.core.util.TimeT;
+import llnl.gnem.core.util.SeriesMath;
+import llnl.gnem.core.util.TimeT;
 
 /**
  *

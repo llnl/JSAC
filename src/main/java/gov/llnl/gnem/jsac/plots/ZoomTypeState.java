@@ -29,10 +29,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
 
-import llnl.gnem.dftt.core.gui.plotting.ZoomType;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
-import llnl.gnem.dftt.core.gui.util.Utility;
-import llnl.gnem.dftt.core.util.ButtonAction;
+import llnl.gnem.core.gui.plotting.ZoomType;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
+import llnl.gnem.core.gui.util.Utility;
+import llnl.gnem.core.util.ButtonAction;
 
 /**
  *

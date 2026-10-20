@@ -99,28 +99,4 @@ public class RQSacCommand implements SacCommand {
         String[] names = { "RQ" };
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Removes the seismic Q factor from spectral data.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	RQ [Q v],[R v],[C v]\n"
-                + "INPUT\n"
-                + "	Q v:	Set quality factor to v.\n"
-                + "	R v:	Set distance in km. to v.\n"
-                + "	C v:	Set group velocity in km/sec to v\n"
-                + "DEFAULT VALUES\n"
-                + "	RQ Q 1. R 0. C 1.\n"
-                + "DESCRIPTION\n"
-                + "	The equation used to correct the amplitude is given below:\n"
-                + "\n"
-                + "	AMP_corrected(F) = AMP_uncorrected(F) * Exp( (pi*R*F) / (Q*C) )\n"
-                + "	where: F is the frequency in Hz. R is the distance in km. C is the \n"
-                + "	group velocity in km/sec. Q is the the nondimensional quality factor.\n"
-                + "\n"
-                + "HEADER CHANGES\n"
-                + "	DEPMIN, DEPMAX, DEPMEN";
-    }
 }

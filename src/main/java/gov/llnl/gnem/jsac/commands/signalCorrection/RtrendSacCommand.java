@@ -51,12 +51,4 @@ public class RtrendSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
     
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Removes a linear trend from the data.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	RTREND";
-    }
 }

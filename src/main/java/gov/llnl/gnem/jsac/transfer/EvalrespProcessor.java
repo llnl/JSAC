@@ -36,11 +36,12 @@ import com.isti.jevalresp.ChannelMatchPolicy;
 import com.isti.jevalresp.ResponseUnits;
 
 import gov.llnl.gnem.response.ResponseMetaData;
+import gov.llnl.gnem.response.ResponseType;
 import gov.llnl.gnem.response.TransferData;
 import gov.llnl.gnem.response.TransferFunctionProcessor;
-import llnl.gnem.dftt.core.util.StreamKey;
-import llnl.gnem.dftt.core.util.TimeT;
-import llnl.gnem.dftt.core.waveform.seismogram.CssSeismogram;
+import llnl.gnem.core.util.StreamKey;
+import llnl.gnem.core.util.TimeT;
+import llnl.gnem.core.waveform.seismogram.CssSeismogram;
 
 /**
  *
@@ -53,7 +54,7 @@ public class EvalrespProcessor {
     public static TransferData getTransferFunction(ResponseOptions responseOptions, StreamKey key, CssSeismogram s, ChannelMatchPolicy policy, Map<StreamKey, File> keyFileMap)
             throws IllegalStateException, FileNotFoundException {
         Unit<?> forcedInputUnits = ResponseUnits.NANOMETER;
-        gov.llnl.gnem.response.ResponseType responseType = gov.llnl.gnem.response.ResponseType.EVRESP;
+      //  ResponseType responseType = responseOptions.
         String filename = responseOptions.getFilename();
         if (filename == null) {
             File tmp = keyFileMap.get(key);
@@ -62,6 +63,7 @@ public class EvalrespProcessor {
             }
         }
         if (filename != null) {
+            ResponseType responseType = responseOptions.getResponseType();
             ResponseMetaData rmd = buildResponseMetadata(filename, forcedInputUnits, responseType);
             try {
                 TransferData transferData = new TransferFunctionProcessor().getFromTransferFunction(
@@ -86,7 +88,7 @@ public class EvalrespProcessor {
         }
     }
 
-    private static ResponseMetaData buildResponseMetadata(String filename, Unit<?> forcedInputUnits, gov.llnl.gnem.response.ResponseType responseType) throws FileNotFoundException {
+    private static ResponseMetaData buildResponseMetadata(String filename, Unit<?> forcedInputUnits, ResponseType responseType) throws FileNotFoundException {
 
         Double startTime = TimeT.MIN_EPOCH_TIME;
         Double endTime = TimeT.MAX_EPOCH_TIME;

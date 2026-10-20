@@ -24,6 +24,7 @@ package gov.llnl.gnem.jsac;
 
 import java.io.File;
 import java.util.List;
+import java.net.URL;
 
 import org.junit.jupiter.api.Assertions;
 
@@ -78,8 +79,12 @@ public class TestUtil {
         if (clear) {
             SacDataModel.getInstance().clear();
         }
+        System.out.println("SAC File name: "+sacFileName);
+        System.out.println("Diectory name: "+testFileDirectory);
         List<SacTraceData> results = SacDataModel.getInstance().getData();
         ClassLoader classLoader = SacDataModel.getInstance().getClass().getClassLoader();
+        System.out.println("ClassLoader: " + classLoader);
+        System.out.println("Getting file...");
         File file = getResourceFile(classLoader, testFileDirectory, sacFileName);
         SacTraceData std = Misc.createSacFile(file.toPath(), encoding);
         results.add(std);
@@ -88,7 +93,11 @@ public class TestUtil {
     }
 
     public static File getResourceFile(ClassLoader classLoader, String testFileDirectory, String sacFileName) {
-        File file = new File(classLoader.getResource(String.format("%s%s", testFileDirectory, sacFileName)).getFile());
+        String resourceName = String.format("%s%s", testFileDirectory, sacFileName);
+        System.out.println("ResourceName = " + resourceName);
+        URL url = classLoader.getResource(resourceName);
+        System.out.println("URL = " +url);
+        File file = new File(url.getFile());
         return file;
     }
 

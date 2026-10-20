@@ -52,13 +52,4 @@ public class PwdSacCommand implements SacCommand {
         String[] names = {"PWD"};
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Prints the current working directory.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	PWD \n";
-    }
 }

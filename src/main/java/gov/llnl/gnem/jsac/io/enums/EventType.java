@@ -96,4 +96,105 @@ public enum EventType {
         return description;
     }
 
+    public static EventType getEventTypeFromString(String etype) {
+        if (etype == null) {
+            return EventType.IUNKNOWN;
+        }
+        switch (etype) {
+            case "null":
+                return EventType.IUNKNOWN;
+            case "EARTHQUAKE":
+                return EventType.IQUAKE;
+            case "qt":
+                return EventType.IEQ;
+            case "uk":
+                return EventType.IUNKNOWN;
+            case "qp":
+                return EventType.IEQ0;
+            case "ec":
+                return EventType.ICHEM;
+            case "qf":
+                return EventType.IEQ2;
+            case "EXPLOSION":
+                return EventType.IEX;
+            case "mx":
+                return EventType.IQB;
+            case "ie":
+                return EventType.IOS;
+            case "ms":
+                return EventType.IQB0;
+            case "MINING_EXPLOSION":
+                return EventType.IQBX;
+            case "mp":
+                return EventType.IQB0;
+            case "INDUCED_OR_TRIGGERED_EVENT":
+                return EventType.IQMT;
+            case "QUARRY_BLAST":
+                return EventType.IQBX;
+            case "NOT_REPORTED":
+                return EventType.IUNKNOWN;
+            case "ROCK_BURST":
+                return EventType.IQMT;
+            case "mb":
+                return EventType.IQMT;
+            case "OTHER_EVENT":
+                return EventType.IOTHER;
+            case "me":
+                return EventType.IQMT;
+            case "ICE_QUAKE":
+                return EventType.IOS;
+            case "qd":
+                return EventType.IEQ3;
+            case "en":
+                return EventType.INU;
+            case "EXPERIMENTAL_EXPLOSION":
+                return EventType.ICHEM;
+            case "qh":
+                return EventType.IOS;
+            case "ex":
+                return EventType.IEX;
+            case "e3":
+                return EventType.IEX;
+            case "NUCLEAR_EXPLOSION":
+                return EventType.INU;
+            case "is":
+                return EventType.IQMT;
+            case "ep":
+                return EventType.IEX0;
+            case "CHEMICAL_EXPLOSION":
+                return EventType.ICHEM;
+            case "LANDSLIDE":
+                return EventType.IOTHER;
+            case "SONIC_BOOM":
+                return EventType.IOTHER;
+            case "mc":
+                return EventType.IQC;
+            case "ACOUSTIC_NOISE":
+                return EventType.IOTHER;
+            case "CONTROLLED_EXPLOSION":
+                return EventType.IEX;
+            case "ls":
+                return EventType.IOS;
+            case "MINE_COLLAPSE":
+                return EventType.IQC;
+            case "METEORITE":
+                return EventType.IMET;
+            case "COLLAPSE":
+                return EventType.IQC;
+            case "NOT_EXISTING":
+                return EventType.IUNKNOWN;
+            case "xm":
+                return EventType.IMET;
+            case "ROCKSLIDE":
+                return EventType.IOS;
+            case "e4":
+                return EventType.IEX0;
+            case "HYDROACOUSTIC_EVENT":
+                return EventType.IOS;
+            case "e2":
+                return EventType.INU;
+            default:
+                return EventType.IUNKNOWN;
+        }
+    }
 }

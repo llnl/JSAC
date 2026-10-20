@@ -23,26 +23,28 @@
 package gov.llnl.gnem.jsac.plots;
 
 import java.awt.BorderLayout;
+import javax.swing.JButton;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import llnl.gnem.core.gui.plotting.plotPrefs.OpenPlotPrefsDialogAction;
 
-/**
- *
- * @author dodge1
- */
 public class PlotPanelTab extends JPanel {
 
     private final PlotToolbar toolbar;
     private final SharedPlotPanel plotPanel;
 
-    public PlotPanelTab(JFrame frame, SharedPlotPanel panel) {
+    public PlotPanelTab(JFrame frame, SharedPlotPanel panel, boolean isTimeDomain) {
         super(new BorderLayout());
 
         plotPanel = panel;
-        toolbar = new PlotToolbar(frame, plotPanel);
+        toolbar = new PlotToolbar(frame, plotPanel, isTimeDomain);
         add(toolbar, BorderLayout.NORTH);
         add(plotPanel, BorderLayout.CENTER);
+        OpenPlotPrefsDialogAction.getInstance(plotPanel).setParentComponent(frame);
+        JButton button = new JButton(OpenPlotPrefsDialogAction.getInstance(plotPanel));
+        toolbar.add(button);
+
     }
 
     public void exportPlot() {

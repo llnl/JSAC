@@ -37,7 +37,6 @@ import gov.llnl.gnem.jsac.commands.SacCommand;
 import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
-import gov.llnl.gnem.jsac.util.PartialDataWindow;
 
 public class MarkptpSacCommand implements SacCommand {
 
@@ -45,7 +44,6 @@ public class MarkptpSacCommand implements SacCommand {
 
     private static String toMarker = "T0";
     private static double length = 5.0;
-    private static final PartialDataWindow pdw = new PartialDataWindow();
 
     private static final List<AttributeDescriptor> descriptors = new ArrayList<>();
     private static final List<String> refs;
@@ -101,42 +99,6 @@ public class MarkptpSacCommand implements SacCommand {
             std.markptp(MTWSacCommand.getPartialDataWindow(), length, idx);
 
         }
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Measures and marks the maximum peak to peak amplitude of each signal within the measurement time window.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	MARKPTP {LENGTH v},{TO marker}\n"
-                + "INPUT\n"
-                + "	LENGTH v:	Change the length of the sliding window to v seconds.\n"
-                + "	TO marker:	Define the first time marker in the header to store results. \n"
-                + "	The time of the minimum is stored in this marker. The time of the maximum \n"
-                + "	is stored in the next marker.\n"
-                + "		marker:	T0|T1|T2|T3|T4|T5|T6|T7|T8|T9\n"
-                + "DEFAULT VALUES\n"
-                + "	MARKPTP LENGTH 5.0 TO T0\n"
-                + "DESCRIPTION\n"
-                + "	This command measures the times and the amplitude of the maximum peak-to-peak \n"
-                + "	excursion of the data within the current measurement time window (see MTW.) \n"
-                + "	The results are written into the header. The time of the minimum value (valley) \n"
-                + "	is written into the requested marker. The time of the maximum value (peak) is \n"
-                + "	written into the next marker. The peak-to-peak amplitude is written into USER0. \n"
-                + "	The results are also written into the alphanumeric pick file if it is open (see OAFP.)\n"
-                + "EXAMPLES\n"
-                + "	To set the measurement time window to be between the two header fields, T4 and T5, and the default sliding window length and marker:\n"
-                + "\n"
-                + "		SAC> MTW T4 T5\n"
-                + "		SAC> MARKPTP\n"
-                + "	To set the measurement time window to be the 30 seconds immediately after the \n"
-                + "	first arrival, and the sliding window length to to 3 seconds, and the starting marker to T7:\n"
-                + "\n"
-                + "		SAC> MTW A 0 30\n"
-                + "		SAC> MARKP L 3. TO T7\n"
-                + "HEADER CHANGES\n"
-                + "	Tn, USER0, KTn, KUSER0";
     }
 
     @Override

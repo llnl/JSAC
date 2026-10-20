@@ -31,7 +31,7 @@ import gov.llnl.gnem.jsac.commands.AttributeDescriptor;
 import gov.llnl.gnem.jsac.commands.SacCommand;
 import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -69,7 +69,7 @@ public class TitleSacCommand implements SacCommand {
         if (sizes != null) {
             for (Object aSize : sizes) {
                 String titleSize = (String) aSize;
-                PlotAxes.getInstance().setTitleFontSize(titleSize.toUpperCase());
+                PlotPrefs.getInstance().setTitleFontSize(titleSize.toUpperCase());
                 break;
             }
         }
@@ -77,50 +77,25 @@ public class TitleSacCommand implements SacCommand {
         List<Object> objects = parsedTokens.remove("ON");
         if (objects != null) {
             showLabel = true;
-            PlotAxes.getInstance().setShowTitle(showLabel);
+            PlotPrefs.getInstance().setShowTitle(showLabel);
         }
         objects = parsedTokens.remove("OFF");
         if (objects != null) {
             showLabel = false;
-            PlotAxes.getInstance().setShowTitle(showLabel);
+            PlotPrefs.getInstance().setShowTitle(showLabel);
         }
 
         objects = parsedTokens.get(TokenListParser.LEFT_OVER_TOKENS);
         if (objects != null && !objects.isEmpty()) {
             String label = (String) objects.get(0);
-            PlotAxes.getInstance().setShowTitle(true);
-            PlotAxes.getInstance().setTitle(label);
+            PlotPrefs.getInstance().setShowTitle(true);
+            PlotPrefs.getInstance().setTitle(label);
         }
     }
 
     @Override
     public void execute() {
 
-    }
-
-    @Override
-    public  String getHelpString() {
-        return "SUMMARY\n"
-                + "	Defines the plot title and attributes.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	TITLE {ON|OFF|text},{SIZE size}\n"
-                + "		Where size is one of the following:\n"
-                + "\n"
-                + "		TINY|SMALL|MEDIUM|LARGE|HUGE\n"
-                + "INPUT\n"
-                + "	ON:	Turn title option on. Don't change title text.\n"
-                + "	OFF:	Turn title option off.\n"
-                + "	text:	Turn title option on. Change text of title. \n"
-                + "			If text contains embedded blanks, it must be enclosed in single quotes.\n"
-                + "	SIZE size:	Change title text size.\n"
-                + "		TINY:	Tiny text size has 132 characters per line.\n"
-                + "		SMALL:	Small text size has 100 characters per line.\n"
-                + "		MEDIUM:	Medium text size has 80 characters per line.\n"
-                + "		LARGE:	Large text size has 50 characters per line.\n"
-                + "		HUGE:	Huge text size has 33 characters per line.\n"
-                + "DEFAULT VALUES\n"
-                + "	TITLE OFF SIZE SMALL";
     }
 
     @Override

@@ -28,7 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import gov.llnl.gnem.jsac.commands.SacCommand;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import gov.llnl.gnem.jsac.plots.Scale;
 
 /**
@@ -43,23 +43,12 @@ public class LinLinSacCommand implements SacCommand {
 
     @Override
     public void execute() {
-        PlotAxes.getInstance().setXscale(Scale.LINEAR);
-        PlotAxes.getInstance().setYscale(Scale.LINEAR);
+        PlotPrefs.getInstance().setXscale(Scale.LINEAR);
+        PlotPrefs.getInstance().setYscale(Scale.LINEAR);
     }
 
     @Override
     public void initialize(String[] tokens) {
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Turns on linear scaling for the x and y axes.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	LINLIN\n"
-                + "DEFAULT VALUES\n"
-                + "	Linear scaling for both axes.";
     }
 
     @Override

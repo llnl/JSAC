@@ -20,7 +20,6 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.commands.graphicsAction;
 
 import java.util.ArrayList;
@@ -43,12 +42,13 @@ import gov.llnl.gnem.jsac.commands.ValuePossibilities;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SpectralData;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SpectralData.PresentationFormat;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import gov.llnl.gnem.jsac.plots.PlotUtils;
 import gov.llnl.gnem.jsac.plots.Scale;
 import gov.llnl.gnem.jsac.plots.plotsp.PlotSPFrame;
 import gov.llnl.gnem.jsac.plots.plotsp.PlotSPPanel;
-import llnl.gnem.dftt.core.util.PairT;
+import llnl.gnem.core.gui.plotting.PlotPrinter;
+import llnl.gnem.core.util.PairT;
 
 /**
  *
@@ -69,6 +69,7 @@ public class PlotSPSacCommand implements SacCommand {
     private final Scanner sc = new Scanner(System.in);
 
     private static final List<AttributeDescriptor> descriptors = new ArrayList<>();
+    private final PlotPrintOptions plotPrintOptions;
 
     static {
         descriptors.add(new AttributeDescriptor("ASIS", ValuePossibilities.NO_VALUE, null));
@@ -82,6 +83,11 @@ public class PlotSPSacCommand implements SacCommand {
         descriptors.add(new AttributeDescriptor("LINLOG", ValuePossibilities.NO_VALUE, null));
         descriptors.add(new AttributeDescriptor("LOGLIN", ValuePossibilities.NO_VALUE, null));
         descriptors.add(new AttributeDescriptor("LOGLOG", ValuePossibilities.NO_VALUE, null));
+        descriptors.addAll(PlotPrintOptions.getPrintDescriptors());
+    }
+
+    public PlotSPSacCommand() {
+        plotPrintOptions = new PlotPrintOptions();
     }
 
     @Override
@@ -136,6 +142,7 @@ public class PlotSPSacCommand implements SacCommand {
         if (objects != null) {
             componentType = ComponentType.PH;
         }
+        plotPrintOptions.initialize(parsedTokens);
     }
 
     private void displayPrompt() {
@@ -150,14 +157,19 @@ public class PlotSPSacCommand implements SacCommand {
             log.warn("No data files to plot!");
             return;
         }
+        if (plotPrintOptions.isJustListPrinters()) {
+            PlotPrinter.getInstance().listPrinters();
+            return;
+        }
         displayPrompt();
 
         // Initialization for global ylimits if so requested.
         PairT<Double, Double> dataMinMax = PlotUtils.getGlobalLimits(traces);
-        PlotAxes.getInstance().getYlimits().setDataRange(dataMinMax);
-        PlotAxes.getInstance().getYlimits().resetIndex(); //If multiple limits have been specified this sets the pointer at 1st limit.
+        PlotPrefs.getInstance().getYlimits().setDataRange(dataMinMax);
+        PlotPrefs.getInstance().getYlimits().resetIndex(); //If multiple limits have been specified this sets the pointer at 1st limit.
 
         int traceCount = SacDataModel.getInstance().getTraceCount();
+        boolean usePlotNumber = traces.size() > 1;
         for (int j = 0; j < traces.size(); ++j) {
             SacTraceData sacData = traces.get(j);
             SpectralData dft = sacData.getSpectralData();
@@ -171,16 +183,19 @@ public class PlotSPSacCommand implements SacCommand {
             final int m = j;
             SwingUtilities.invokeLater(() -> {
                 PlotSPPanel.getInstance().plotDFT(sacData, m, xscale, yscale, requested);
+                plotPrintOptions.maybePrintPlot(PlotSPPanel.getInstance(), m, usePlotNumber);
             });
 
             if (j >= traceCount - 1) {
                 System.out.println("");
                 return;
             }
-            String text = sc.nextLine().trim().toUpperCase();
-            if (text.equals("Q") || text.equals("QUIT")) {
-                System.out.println("");
-                return;
+            if (plotPrintOptions.isPauseAfterPlotting()) {
+                String text = sc.nextLine().trim().toUpperCase();
+                if (text.equals("Q") || text.equals("QUIT")) {
+                    System.out.println("");
+                    return;
+                }
             }
             displayPrompt();
 
@@ -198,35 +213,7 @@ public class PlotSPSacCommand implements SacCommand {
 
     @Override
     public Collection<String> getCommandNames() {
-        String[] names = { "PSP", "PLOTSP" };
+        String[] names = {"PSP", "PLOTSP"};
         return new ArrayList<>(Arrays.asList(names));
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Plots spectral data in several different formats.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	PLOTSP {type},{mode}\n"
-                + "		where type is one of the following:\n"
-                + "			ASIS | RLIM | AMPH | RL | IM | AM | PH\n"
-                + "	\n"
-                + "		and mode is one of the following:\n"
-                + "			LINLIN | LINLOG | LOGLIN | LOGLOG\n"
-                + "INPUT\n"
-                + "	ASIS:	Plot components in their present format.\n"
-                + "	RLIM:	Plot real and imaginary components.\n"
-                + "	AMPH:	Plot amplitude and phase components.\n"
-                + "	RL:	Plot real component only.\n"
-                + "	IM:	Plot imaginary component only.\n"
-                + "	AM:	Plot amplitude component only.\n"
-                + "	PH:	Plot phase component only.\n"
-                + "	LINLIN:	Set x-y scaling mode to linear-linear.\n"
-                + "	LINLOG:	Set x-y scaling mode to linear-logarithmic.\n"
-                + "	LOGLIN:	Set x-y scaling mode to logarithmic-linear.\n"
-                + "	LOGLOG:	Set x-y scaling mode to logarithmic-logarithmic.\n"
-                + "DEFAULT VALUES\n"
-                + "	PLOTSP ASIS LOGLOG";
     }
 }

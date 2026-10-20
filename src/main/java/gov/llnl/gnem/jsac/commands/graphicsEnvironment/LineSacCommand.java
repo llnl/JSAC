@@ -36,7 +36,7 @@ import gov.llnl.gnem.jsac.commands.SacCommand;
 import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
 import gov.llnl.gnem.jsac.plots.PlotDrawingData;
-import llnl.gnem.dftt.core.gui.plotting.PenStyle;
+import llnl.gnem.core.gui.plotting.PenStyle;
 
 /**
  *
@@ -108,7 +108,7 @@ public class LineSacCommand implements SacCommand {
                     PlotDrawingData.getInstance().setLineIncrementList("STANDARD");
                     return;
                 } else if (NumberUtils.isParsable(tmp)) {
-                    incList.add(Integer.parseInt(tmp));
+                    incList.add(Integer.valueOf(tmp));
                 }
             }
             PlotDrawingData.getInstance().setLineIncrementList(incList);
@@ -118,29 +118,6 @@ public class LineSacCommand implements SacCommand {
     @Override
     public void execute() {
 
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Controls the linestyle selection in plots.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "LINE {ON|OFF|SOLID|DOTTED|n} {INCREMENT {ON|OFF}}, {LIST STANDARD|nlist}\n"
-                + "INPUT\n"
-                + "	{ON}:			Turn line-drawing on. Don't change linestyle.\n"
-                + "	OFF:			Turn line-drawing off.\n"
-                + "	SOLID:			Change to solid linestyle and turn line-drawing on.\n"
-                + "	DOTTED:			Change to dotted linestyle and turn line-drawing on.\n"
-                + "	n:				Change to linestyle n and turn line-drawing on. \n"
-                + "	INCREMENT {ON}:	For multiple data files in a plot, increment \n"
-                + "					linestyle from linestyle list for each data file in the plot.\n"
-                + "	INCREMENT OFF:	Do not increment linestyle for multiple data files.\n"
-                + "	LIST STANDARD:	Change to the standard linestyle list (1 2 3 ..).\n"
-                + "	LIST nlist:		Change the content of the linestyle list. \n"
-                + "					Enter list of linestyle numbers (e.g., 3 1 2 ..).\n"
-                + "DEFAULT VALUES\n"
-                + "	LINE SOLID INCREMENT OFF LIST STANDARD ";
     }
 
     @Override

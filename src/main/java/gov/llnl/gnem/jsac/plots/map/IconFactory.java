@@ -36,6 +36,7 @@ public class IconFactory {
     }
 
     public static Icon eventIcon(Location location, String id, Double size) {
+        id = id == null ? "-" :id;
         LeafletIcon icon = new LeafletIcon(id, location, id, IconTypes.CIRCLE);
         if (size != null && size != 0.0) {
             icon.setIconSize(size);

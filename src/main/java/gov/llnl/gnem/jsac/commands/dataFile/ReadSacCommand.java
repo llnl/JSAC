@@ -20,7 +20,6 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.commands.dataFile;
 
 import java.nio.file.Path;
@@ -52,10 +51,12 @@ public class ReadSacCommand implements SacCommand {
     private String cwd;
     private boolean readmore = false;
     private SACDataEncoding encoding;
+    private final List<Path> filesLastRead;
 
     public ReadSacCommand() {
         mytokens = new ArrayList<>();
         cwd = PathManager.getInstance().getCurrentDir().toString();
+        filesLastRead = new ArrayList<>();
     }
 
     @Override
@@ -66,7 +67,7 @@ public class ReadSacCommand implements SacCommand {
         mytokens.addAll(Arrays.asList(tokens));
         mytokens.remove(0); // Don't need the command name anymore.
         readmore = FileUtil.maybeGetMoreOption(mytokens);
-        encoding = FileUtil.maybeGetDataEncodingList( mytokens);
+        encoding = FileUtil.maybeGetDataEncodingList(mytokens);
         try {
             requestedDir = FileUtil.maybeGetRequestedDir(mytokens);
             if (requestedDir == null) {
@@ -81,57 +82,39 @@ public class ReadSacCommand implements SacCommand {
     @Override
     public void execute() {
         if (mytokens.isEmpty()) {
-            System.out.println("The READ comand requires at least one argument!");
-            return;
+            if (filesLastRead.isEmpty()) {
+                System.out.println("The READ comand requires at least one argument!");
+             } else {
+                SacDataModel.getInstance().clear();
+                long start = System.currentTimeMillis();
+                List<SacTraceData> results = new ArrayList<>();
+                results.addAll(getResults(filesLastRead));
+                long end = System.currentTimeMillis();
+                double elapsed = (end - start) / 1000.0;
+                SacDataModel.getInstance().addAll(results, elapsed);
+            }
+        } else {
+            if (!readmore) {
+                SacDataModel.getInstance().clear();
+            }
+            long start = System.currentTimeMillis();
+            List<SacTraceData> results = new ArrayList<>();
+            mytokens.stream().map(regExString -> new FileFinder(Paths.get(requestedDir), regExString).findMatches()).forEachOrdered(paths -> {
+                results.addAll(getResults(paths));
+            });
+            long end = System.currentTimeMillis();
+            double elapsed = (end - start) / 1000.0;
+            filesLastRead.clear();
+            for (SacTraceData std : results) {
+                filesLastRead.add(std.getFilename());
+            }
+            SacDataModel.getInstance().addAll(results, elapsed);
         }
-        if (!readmore) {
-            SacDataModel.getInstance().clear();
-        }
-        long start = System.currentTimeMillis();
-        List<SacTraceData> results = new ArrayList<>();
-        mytokens.stream().map(regExString -> new FileFinder(Paths.get(requestedDir), regExString).findMatches()).forEachOrdered(paths -> {
-            results.addAll(getResults(paths));
-        });
-        long end = System.currentTimeMillis();
-        double elapsed = (end - start) / 1000.0;
-        SacDataModel.getInstance().addAll(results, elapsed);
-
     }
 
     private List<SacTraceData> getResults(List<Path> filesToRead) {
-        List<SacTraceData> results = new ArrayList<>(filesToRead.parallelStream().map(t->Misc.createSacFile(t,encoding)).filter(Objects::nonNull).collect(Collectors.toList()));
+        List<SacTraceData> results = new ArrayList<>(filesToRead.parallelStream().map(t -> Misc.createSacFile(t, encoding)).filter(Objects::nonNull).collect(Collectors.toList()));
         return results;
-    }
-
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "Reads data from disk into memory.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "READ [options] [filelist]\n"
-                + "where options is one or more of the following:\n"
-                + "\n"
-                + "     MORE\n"
-                + "     ALPHA\n"
-                + "     DIR CURRENT|name\n"
-                + "ALL options must preceed any element in the filelist.\n"
-                + "\n"
-                + "INPUT\n"
-                + "	MORE:	\n"
-                + "		Place the new data files in memory AFTER the old ones. If this option is omitted, the new data files REPLACE the old ones.\n"
-                + "\n"
-                + "\n"
-                + "	DIR CURRENT:	\n"
-                + "		Read all simple filenames (with or without wildcards) from the current directory.\n"
-                + "\n"
-                + "	DIR name:	\n"
-                + "		Read all simple filenames (with or without wildcards) from the directory called name. This may be a relative or absolute directory name.\n"
-                + "\n"
-                + "\n"
-                + "	file:	\n"
-                + "		A legal filename. This may be a simple filename or a pathname. The pathname can be a relative or absolute one. See the DESCRIPTION and EXAMPLES sections below for more details.";
     }
 
     @Override

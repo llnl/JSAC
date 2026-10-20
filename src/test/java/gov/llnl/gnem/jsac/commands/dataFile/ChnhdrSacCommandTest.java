@@ -46,31 +46,14 @@ import gov.llnl.gnem.jsac.io.enums.FileType;
 import gov.llnl.gnem.jsac.io.enums.MagSource;
 import gov.llnl.gnem.jsac.io.enums.MagType;
 import gov.llnl.gnem.jsac.io.enums.SyntheticsType;
-import llnl.gnem.dftt.core.io.SAC.Iztype;
-import llnl.gnem.dftt.core.util.TimeT;
+import llnl.gnem.core.io.SAC.Iztype;
+import llnl.gnem.core.util.TimeT;
 
 public class ChnhdrSacCommandTest {
 
     private static final String TEST_FILE_DIRECTORY = "gov/llnl/gnem/jsac/commands/dataFile/";
 
-    public ChnhdrSacCommandTest() {
-    }
-
-    @BeforeAll
-    public static void setUpClass() {
-    }
-
-    @AfterAll
-    public static void tearDownClass() {
-    }
-
-    @BeforeEach
-    public void setUp() {
-    }
-
-    @AfterEach
-    public void tearDown() {
-    }
+ 
 
     /**
      * Test of execute method, of class ChnhdrSacCommand changing one header

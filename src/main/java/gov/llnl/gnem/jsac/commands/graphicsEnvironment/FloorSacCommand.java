@@ -102,21 +102,6 @@ public class FloorSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Puts a minimum value on logarithmically scaled data.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	FLOOR {ON|OFF|v}\n"
-                + "INPUT\n"
-                + "	{ON}:	Turn floor option on but don't change value of floor.\n"
-                + "	OFF:	Turn floor option off.\n"
-                + "	v:	Turn floor option on and change value of floor.\n"
-                + "DEFAULT VALUES\n"
-                + "	FLOOR 1.0E-10";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = { "FLOOR" };
         return new ArrayList<>(Arrays.asList(names));

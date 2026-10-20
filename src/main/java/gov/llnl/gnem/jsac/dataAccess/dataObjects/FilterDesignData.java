@@ -31,7 +31,7 @@ import com.oregondsp.signalProcessing.filter.iir.IIRFilter;
 import com.oregondsp.signalProcessing.filter.iir.PassbandType;
 
 import gov.llnl.gnem.jsac.commands.filtering.ChebyshevParameters;
-import llnl.gnem.dftt.core.signalprocessing.filter.FilterDesign;
+import llnl.gnem.core.signalprocessing.filter.FilterDesign;
 
 public class FilterDesignData {
 

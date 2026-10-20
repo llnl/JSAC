@@ -59,25 +59,6 @@ public class CutImSacCommand extends PDWSetterBase implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Cuts files in memory. \n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	CUTIM pdw \n"
-                + "INPUT\n"
-                + "	pdw:	Partial Data Window. It consists of a starting and a stopping value of the \n"
-                + "			independent variable (usually time), which defines which segment of a file \n"
-                + "			(or files) one wishes to retain. The most general form of a pde is :\n"
-                + "			ref offset ref offset:, where ref is a reference value that is one of the \n"
-                + "			following: B|E|O|A|F|Tn, where n=0,1...9. \n"
-                + "	offset:	A positive or negative number which is added to the reference value (optional).\n"
-                + "DEFAULT VALUES\n"
-                + "	Start and stop reference values are required. See examples below for an exception. \n"
-                + "	If the start or stop offset is omitted, it is assumed to be zero.";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = {"CUTIM"};
         return new ArrayList<>(Arrays.asList(names));

@@ -28,7 +28,8 @@ package gov.llnl.gnem.jsac.commands;
  * @author dodge1
  */
 public enum ValuePossibilities {
-    NO_VALUE(0), ZERO_OR_MORE(-1),ONE_VALUE(1), ONE_OR_MORE(-1), TWO_VALUES(2), TWO_OR_MORE(-1), THREE_VALUES(3), THREE_OR_MORE(-1), FOUR_VALUES(4), FOUR_OR_MORE(-1);
+    NO_VALUE(0), ZERO_OR_MORE(-1),ONE_VALUE(1), ONE_OR_MORE(-1), TWO_VALUES(2), TWO_OR_MORE(-1), 
+    THREE_VALUES(3), THREE_OR_MORE(-1), FOUR_VALUES(4), FOUR_OR_MORE(-1), FIVE_VALUES(5), SIX_VALUES(6), EIGHT_VALUES(8);
     private final int numValues;
 
     private ValuePossibilities(int count) {

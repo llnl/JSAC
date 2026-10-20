@@ -20,27 +20,24 @@
  * limitations under the License.
  * #L%
  */
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package gov.llnl.gnem.jsac.transfer;
 
+import gov.llnl.gnem.response.ResponseType;
 import java.nio.file.Path;
 import java.util.Objects;
 
-/**
- *
- * @author dodge1
- */
+
 public class ResponseOptions {
 
+    private final ResponseType responseType;
     private final String filename;
     private final Path searchDir;
 
-    public ResponseOptions(String filename, Path searchDir) {
+    public ResponseOptions(ResponseType responseType,String filename, Path searchDir) {
         this.filename = filename;
         this.searchDir = searchDir;
+        this.responseType = responseType;
     }
 
     public String getFilename() {
@@ -51,16 +48,21 @@ public class ResponseOptions {
         return searchDir;
     }
 
+    public ResponseType getResponseType() {
+        return responseType;
+    }
+
     @Override
     public String toString() {
-        return "ResponseOptions{" + "filename=" + filename + ", searchDir=" + searchDir + '}';
+        return "ResponseOptions{" + "ResponseType=" + responseType + ", filename=" + filename + ", searchDir=" + searchDir + '}';
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 37 * hash + Objects.hashCode(this.filename);
-        hash = 37 * hash + Objects.hashCode(this.searchDir);
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.responseType);
+        hash = 79 * hash + Objects.hashCode(this.filename);
+        hash = 79 * hash + Objects.hashCode(this.searchDir);
         return hash;
     }
 
@@ -77,6 +79,9 @@ public class ResponseOptions {
         }
         final ResponseOptions other = (ResponseOptions) obj;
         if (!Objects.equals(this.filename, other.filename)) {
+            return false;
+        }
+        if (this.responseType != other.responseType) {
             return false;
         }
         return Objects.equals(this.searchDir, other.searchDir);

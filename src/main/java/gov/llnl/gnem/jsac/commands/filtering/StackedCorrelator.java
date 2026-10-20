@@ -28,12 +28,11 @@ import com.oregondsp.signalProcessing.fft.RDFT;
 
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.io.SACHeader;
-import llnl.gnem.dftt.core.signalprocessing.Sequence;
+import llnl.gnem.core.signalprocessing.Sequence;
 
 public class StackedCorrelator {
 
     private final float[] master;
-    private boolean normalize;
     private final int numberOfWindows;
     private final int windowLength;
     private int mOverlap;
@@ -41,19 +40,18 @@ public class StackedCorrelator {
 
     private RDFT fft;
 
-    public StackedCorrelator(float[] master, boolean normalize, int windowLength, int numberOfWindows, int slaveLength) {
+    public StackedCorrelator( float[] master, boolean normalize, int windowLength, int numberOfWindows, int slaveLength ) {
 
         this.master = master;
-        this.normalize = normalize;
         this.numberOfWindows = numberOfWindows;
         this.windowLength = windowLength;
 
         if (master.length < windowLength) {
-            throw new IllegalStateException("Length of master sequence is smaller than specified window length");
+            throw new IllegalStateException( "Length of master sequence is smaller than specified window length" );
         }
 
         if (slaveLength < windowLength) {
-            throw new IllegalStateException("Length of second sequence is smaller than specified window length");
+            throw new IllegalStateException( "Length of second sequence is smaller than specified window length" );
         }
 
         mOverlap = (int) Math.ceil((double) (windowLength * numberOfWindows - master.length) / (double) (numberOfWindows - 1));

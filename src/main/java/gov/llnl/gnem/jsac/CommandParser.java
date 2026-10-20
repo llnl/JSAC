@@ -26,4 +26,5 @@ import org.apache.commons.cli.Options;
 
 public interface CommandParser {
     public void apply(Options options, String[] args);
+    public String getHelpText();
 }

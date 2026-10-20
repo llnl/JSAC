@@ -31,7 +31,9 @@ import gov.llnl.gnem.jsac.plots.FileIDInfo.FieldLayout;
 import gov.llnl.gnem.jsac.plots.FileIDInfo.Format;
 import gov.llnl.gnem.jsac.plots.FileIDInfo.Location;
 import gov.llnl.gnem.jsac.plots.FileIDInfo.Type;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
+import gov.llnl.gnem.jsac.plots.PlotColors;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +55,7 @@ public class FileIDSacCommand implements SacCommand {
         descriptors.add(new AttributeDescriptor("FIELD_LAYOUT", ValuePossibilities.ONE_VALUE, String.class));
         descriptors.add(new AttributeDescriptor("FL", ValuePossibilities.ONE_VALUE, String.class));
         descriptors.add(new AttributeDescriptor("SIZE", ValuePossibilities.ONE_VALUE, String.class));
+        descriptors.add(new AttributeDescriptor("COLOR", ValuePossibilities.ONE_VALUE, String.class));
         descriptors.add(new AttributeDescriptor("S", ValuePossibilities.ONE_VALUE, String.class));
         descriptors.add(new AttributeDescriptor("FONT", ValuePossibilities.ONE_VALUE, String.class));
         descriptors.add(new AttributeDescriptor("DELIMITER", ValuePossibilities.ONE_VALUE, String.class));
@@ -93,9 +96,24 @@ public class FileIDSacCommand implements SacCommand {
         if (objects != null) {
             for (Object aSize : objects) {
                 String tmp = (String) aSize;
-                int size = PlotAxes.getInstance().getSizeFromString(tmp);
+                int size = PlotPrefs.getInstance().getSizeFromString(tmp);
                 FileIDInfo.getInstance().setFontSize(size);
                 break;
+            }
+        }
+        objects = parsedTokens.remove("COLOR");
+        if (objects != null && objects.size() == 1) {
+            String tmp = (String) objects.get(0);
+            if (tmp.toUpperCase().equals("AUTO")) {
+                FileIDInfo.getInstance().setForceColor(false);
+            } else {
+                Color color = PlotColors.getColorByName(tmp);
+                if (color == null) {
+                    throw new IllegalStateException("Unrecognized color: " + tmp + "!");
+                } else {
+                    FileIDInfo.getInstance().setForceColor(true);
+                    FileIDInfo.getInstance().setTextColor(color);
+                }
             }
         }
         objects = TokenListParser.getObjects(parsedTokens, "FONT");
@@ -178,49 +196,6 @@ public class FileIDSacCommand implements SacCommand {
     @Override
     public void execute() {
 
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Controls the file id display found on most SAC plots.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	FILEID {ON|OFF} {TYPE DEFAULT|NAME|LIST hdrlist},\n"
-                + "			LOCATION UR|UL|LR|LL},\n"
-                + "			FIELD_LAYOUT(FL),\n"
-                + "			{FORMAT EQUALS|COLONS|NONAMES}\n"
-                + "			DELIMITER value\n"
-                + "INPUT\n"
-                + "	FILEID {ON}:	Turn on file id option. Does not change file id type or location.\n"
-                + "	FILEID OFF:		Turn off file id option.\n"
-                + "	TYPE DEFAULT:	Change to the default file id.\n"
-                + "	TYPE NAME:	Use the name of the file as the file id.\n"
-                + "	TYPE LIST hdrlist:\n"
-                + "		Define a list of header fields to display in the fileid.\n"
-                + "		In addition to header fields the list may contain one or more arbitrary strings.\n"
-                + "		Multi-word strings must be enclosed by either (') or (\") characters.\n"
-                + "	LOCATION UR:			Place file id in upper right hand corner.\n"
-                + "	LOCATION UL:			Place file id in upper left hand corner.\n"
-                + "	LOCATION LR:			Place file id in lower right hand corner.\n"
-                + "	LOCATION LL:			Place file id in lower left hand corner.\n"
-                + "	FIELD_LAYOUT VERTICAL:          Arrange fields vertically. Alternates are V or VERT\n"
-                + "	FIELD_LAYOUT HORIZONTAL:	Arrange fields horizontally. Alternates are H or HORIZ\n"
-                + "	FORMAT EQUALS:                  Format consists of header field name, an equals sign, and the header field value.\n"
-                + "	FORMAT COLON:			Format consists of header field name, a colon, and the value.\n"
-                + "	FORMAT NONAMES:			Format consists of header field value only.\n"
-                + "	SIZE 			Set the font size {Default value is 12 point}\n"
-                + "	ADJUSTMENT		Adjust the spacing in points between lines of text (+-) \n"
-                + "	FONT			Set the font for the displayed text {Default is Arial}\n"
-                + "					(Use the FONT command to list available fonts)\n"
-                + "	DELIMITER 		The separator to use between tokens for horizontal layouts\n"
-                + "					The default is \",\" but any combination of characters may be used.\n"
-                + "					Delimiters with whitespace must be enclosed in quotes.\n"
-                + "					To specify an empty string use the keyword none (e.g. DELIMITER none)\n"
-                + "Note: If multiple arguments are enclosed in quotes use the same quote style (e.g. single-quote or double-quote).\n"
-                + "\n"
-                + "DEFAULT VALUES\n"
-                + "	FILEID ON TYPE DEFAULT LOCATION UR FIELD_LAYOUT VERTICAL FORMAT NONAMES FONT Arial SIZE 12 ADJUSTMENT 0 DELIMITER ,";
     }
 
     @Override

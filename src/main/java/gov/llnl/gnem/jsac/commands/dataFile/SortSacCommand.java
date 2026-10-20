@@ -77,19 +77,6 @@ public class SortSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Sorts files in memory by header fields.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	SORT header {ASCEND|DESCEND} {header {ASCEND|DESCEND} ... }\n"
-                + "INPUT\n"
-                + "	HEADER:	header field upon which to sort the files.\n"
-                + "	ASCEND:	Sort files on header in ascending order. This is the default.\n"
-                + "	DESCEND:	Sort files on header in descending order";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = {"SORT"};
         return new ArrayList<>(Arrays.asList(names));

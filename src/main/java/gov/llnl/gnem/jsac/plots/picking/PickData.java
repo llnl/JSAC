@@ -25,8 +25,8 @@ package gov.llnl.gnem.jsac.plots.picking;
 import java.util.Objects;
 
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JSubplot;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.VPickLine;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JSubplot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.VPickLine;
 
 /**
  *

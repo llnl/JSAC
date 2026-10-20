@@ -46,8 +46,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.llnl.gnem.jsac.plots.picking.KeyPhaseMapper.PhaseUsage;
-import llnl.gnem.dftt.core.gui.util.SpringUtilities;
-import llnl.gnem.dftt.core.traveltime.Ak135.TraveltimeCalculatorProducer;
+import llnl.gnem.core.util.SpringUtilities;
+import llnl.gnem.core.traveltime.Ak135.TraveltimeCalculatorProducer;
 
 public class PhasePanel extends JPanel implements ActionListener {
 

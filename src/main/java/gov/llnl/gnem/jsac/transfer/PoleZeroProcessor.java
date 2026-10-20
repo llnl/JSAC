@@ -22,10 +22,8 @@
  */
 package gov.llnl.gnem.jsac.transfer;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Map;
 
 import javax.measure.Unit;
 
@@ -38,32 +36,23 @@ import com.isti.jevalresp.UnitsStatus;
 
 import gov.llnl.gnem.response.ResponseMetaData;
 import gov.llnl.gnem.response.ResponseMetadataExtension;
+import gov.llnl.gnem.response.ResponseType;
 import gov.llnl.gnem.response.ResponseUnitsException;
 import gov.llnl.gnem.response.TransferData;
 import gov.llnl.gnem.response.TransferFunctionProcessor;
-import llnl.gnem.dftt.core.util.StreamKey;
-import llnl.gnem.dftt.core.util.TimeT;
-import llnl.gnem.dftt.core.util.FileUtil.DriveMapper;
-import llnl.gnem.dftt.core.waveform.seismogram.CssSeismogram;
+import llnl.gnem.core.util.TimeT;
+import llnl.gnem.core.util.FileUtil.DriveMapper;
+import llnl.gnem.core.waveform.seismogram.CssSeismogram;
 
-/**
- *
- * @author dodge1
- */
+
 public class PoleZeroProcessor {
     private static final Logger log = LoggerFactory.getLogger(PoleZeroProcessor.class);
 
-    public static TransferData getTransferFunction(ResponseOptions poleZeroOptions, StreamKey key, CssSeismogram s, ChannelMatchPolicy policy, Map<StreamKey, File> keyFileMap)
+    public static TransferData getTransferFunction(ResponseOptions poleZeroOptions, CssSeismogram s, ChannelMatchPolicy policy)
             throws IllegalStateException, FileNotFoundException {
         Unit<?> forcedInputUnits = ResponseUnits.NANOMETER;
-        gov.llnl.gnem.response.ResponseType responseType = gov.llnl.gnem.response.ResponseType.SACPZF;
+        ResponseType responseType = ResponseType.SACPZF;
         String filename = poleZeroOptions.getFilename();
-        if (filename == null) {
-            File tmp = keyFileMap.get(key);
-            if (tmp != null) {
-                filename = tmp.getAbsolutePath();
-            }
-        }
         if (filename != null) {
             ResponseMetaData rmd = buildResponseMetadata(filename, forcedInputUnits, responseType);
             try {
@@ -71,10 +60,10 @@ public class PoleZeroProcessor {
                         s.getNsamp(),
                             s.getSamprate(),
                             s.getTimeAsDouble(),
-                            key.getNet(),
-                            key.getSta(),
-                            key.getChan(),
-                            key.getLocationCode(),
+                            null,
+                            null,
+                            null,
+                            null,
                             rmd,
                             policy);
                 if (forcedInputUnits != null && !forcedInputUnits.equals(transferData.getOriginalUnits().getInputUnits())) {

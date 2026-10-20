@@ -26,7 +26,8 @@ import java.util.Collection;
 
 import gov.llnl.gnem.jsac.dataAccess.DataSelectionCriteria;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
-import llnl.gnem.dftt.core.dataAccess.DataAccessException;
+import llnl.gnem.core.dataObjects.DataAccessException;
+
 
 public interface WaveformRetriever {
     public Collection<SacTraceData> retrieve(DataSelectionCriteria criteria) throws DataAccessException;

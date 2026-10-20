@@ -51,7 +51,7 @@ import gov.llnl.gnem.jsac.io.SACFileWriter;
 import gov.llnl.gnem.jsac.io.SACHeader;
 import gov.llnl.gnem.jsac.io.enums.FileType;
 import gov.llnl.gnem.jsac.util.PathManager;
-import llnl.gnem.dftt.core.util.FileUtil.DriveMapper;
+import llnl.gnem.core.util.FileUtil.DriveMapper;
 
 public class WriteSacCommand implements SacCommand {
 
@@ -120,13 +120,13 @@ public class WriteSacCommand implements SacCommand {
                 }
 
                 switch (s.toUpperCase()) {
-                case "OFF":
-                case "CURRENT":
-                    dir = PathManager.getInstance().getCurrentDir();
-                    break;
-                default:
-                    dir = PathManager.getInstance().resolvePath(DriveMapper.getInstance().maybeMapPath(s));
-                    break;
+                    case "OFF":
+                    case "CURRENT":
+                        dir = PathManager.getInstance().getCurrentDir();
+                        break;
+                    default:
+                        dir = PathManager.getInstance().resolvePath(DriveMapper.getInstance().maybeMapPath(s));
+                        break;
                 }
 
                 for (int i = 0; i < directoryList.size(); i++) {
@@ -160,7 +160,22 @@ public class WriteSacCommand implements SacCommand {
                     fileList.set(i, fileList.get(i) + ".sac");
                 }
 
-            } else if (keys.contains("APPEND")) {
+            } else {
+                List<Object> leftovers = parsedTokens.get(TokenListParser.LEFT_OVER_TOKENS);
+                if (leftovers != null) {
+                    if (fileList.size() != leftovers.size()) {
+                        log.info("Number of arguments ({}) must match number of files in memory ({})", leftovers.size(), fileList.size());
+                        fileList.clear();
+                        directoryList.clear();
+                        throw new IllegalStateException("Error in argument list!");
+                    } else {
+                        for (int i = 0; i < fileList.size(); i++) {
+                            fileList.set(i, (String) leftovers.get(i));
+                        }
+                    }
+                }
+            }
+            if (keys.contains("APPEND")) {
                 List<Object> parameters = parsedTokens.get("APPEND");
                 String s = (String) parameters.get(0);
                 for (int i = 0; i < fileList.size(); i++) {
@@ -187,20 +202,6 @@ public class WriteSacCommand implements SacCommand {
                     String s2 = (String) parameters.get(1);
                     for (int i = 0; i < fileList.size(); i++) {
                         fileList.set(i, fileList.get(i).replaceFirst(Pattern.quote(s1), s2));
-                    }
-                }
-            } else {
-                List<Object> leftovers = parsedTokens.get(TokenListParser.LEFT_OVER_TOKENS);
-                if (leftovers != null) {
-                    if (fileList.size() != leftovers.size()) {
-                        log.info("Number of arguments ({}) must match number of files in memory ({})", leftovers.size(), fileList.size());
-                        fileList.clear();
-                        directoryList.clear();
-                        throw new IllegalStateException("Error in argument list!");
-                    } else {
-                        for (int i = 0; i < fileList.size(); i++) {
-                            fileList.set(i, (String) leftovers.get(i));
-                        }
                     }
                 }
             }
@@ -275,48 +276,8 @@ public class WriteSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-
-        return "SUMMARY\n"
-                + "Writes data in memory to disk, in SAC binary format or alphanumeric format.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "\n"
-                + "WRITE [options] [namingoptions]\n"
-                + "where options is one or more of the following:\n"
-                + "\n"
-                + "DIR OFF|CURRENT|name\n"
-                + "KSTCMP\n"
-                + "These options MUST preceed any element in the naming options:\n"
-                + "OVER\n"
-                + "ALPHA\n"
-                + "filelist\n"
-                + "INPUT\n"
-                + "\n"
-                + "DIR OFF:             Turn directory option off. When off, writes to current directory.\n"
-                + "DIR CURRENT:         Turn directory option on and set name of write directory to the \"current directory\"\n "
-                + "                     (e.g. the directory from which you started SAC.)\n"
-                + "DIR name:            Turn directory option on and set name of write directory to name. Write all filenames\n"
-                + "                     to the directory called name. This may be a relative or absolute directory name.\n"
-                + "KSTCMP:              Use the KSTNM and KCMPNM header variables to define a file name for each data file in\n"
-                + "                     memory. The names generated will be checked for uniqueness, and will have sequencing\n"
-                + "                     digits added as necessary to avoid name clashes.\n"
-                + "OVER:                Use current read filelist as write filelist. Overwrite files on disk with data in memory.\n"
-                + "ALPHA                Write files in alphanumeric format.\n"
-                + "APPEND text          Write filelist is created by appending text to each name in the current read filelist.\n"
-                + "PREPEND text         Write filelist is created by prepending text to each name in the current read filelist.\n"
-                + "DELETE text          Write filelist is created by deleting the first occurrence of text in each name in the \n"
-                + "                       current read filelist.\n"
-                + "CHANGE text1 text2   Write filelist is created by changing the first occurrence of text1 in each name in \n"
-                + "                       the current read filelist to text2.\n"
-                + "filelist             Write filelist is set to filelist. This list may contain simple filenames, relative\n"
-                + "                       pathnames, or full pathnames. IT MAY NOT CONTAIN WILDCARDS.\n\n";
-
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
-        String[] names = { "W", "WRITE" };
+        String[] names = {"W", "WRITE"};
         return new ArrayList<>(Arrays.asList(names));
     }
 

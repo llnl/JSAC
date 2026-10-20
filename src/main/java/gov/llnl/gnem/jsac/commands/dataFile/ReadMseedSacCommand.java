@@ -41,8 +41,9 @@ import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.util.FileFinder;
 import gov.llnl.gnem.jsac.util.FileUtil;
 import gov.llnl.gnem.jsac.util.PathManager;
-import llnl.gnem.dftt.core.waveform.io.mseed.MiniSeedReader;
-import llnl.gnem.dftt.core.waveform.merge.NamedIntWaveform;
+import llnl.gnem.core.waveform.io.mseed.MiniSeedReader;
+import llnl.gnem.core.waveform.seismogram.CssSeismogram;
+
 
 /**
  *
@@ -116,9 +117,9 @@ public class ReadMseedSacCommand implements SacCommand {
         List<SacTraceData> result = new ArrayList<>();
         try {
             Path parent = path.getParent();
-            Collection<NamedIntWaveform> waveforms = MiniSeedReader.readMiniSeed(path.toString());
+            Collection<CssSeismogram> waveforms = MiniSeedReader.readMiniSeed(path.toString());
             System.out.println(path);
-            for (NamedIntWaveform niw : waveforms) {
+            for (CssSeismogram niw : waveforms) {
                 result.add(new SacTraceData(niw, parent));
             }
         } catch (IOException | SeedFormatException | CodecException ex) {
@@ -126,24 +127,6 @@ public class ReadMseedSacCommand implements SacCommand {
         }
         return result;
 
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Read data files in miniSEED format from disk into memory.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	READMSEED {MORE} {DIR name} filelist\n"
-                + "INPUT\n"
-                + "	MORE:	\n"
-                + "		See the READ command.\n"
-                + "\n"
-                + "DIR name:	\n"
-                + "	The directory to be searched for gsefile(s).\n"
-                + "\n"
-                + "filelist:	\n"
-                + "	The name(s) of one or more miniSEED files.";
     }
 
     @Override

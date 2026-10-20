@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>gov.llnl.gnem</groupId>
+    <artifactId>jsac-os-dependencies</artifactId>
+    <version>1.0.4</version>
+
+    <name>jsac-os-dependencies</name>
+    <description>Builds the jsac-os project dependencies</description>
+
+    <packaging>pom</packaging>
+
+    <modules>
+	<module>iris-ws</module>
+        <module>response</module>
+        <module>coda-calibration</module>
+        <module>fdsndata</module>
+        <module>gnemcore</module>
+    </modules>
+
+</project>

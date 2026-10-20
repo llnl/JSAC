@@ -29,7 +29,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 
-import llnl.gnem.dftt.core.gui.util.Utility;
+import llnl.gnem.core.gui.util.Utility;
 
 /**
  *

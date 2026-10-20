@@ -20,7 +20,6 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.commands.dataFile;
 
 import java.util.ArrayList;
@@ -59,6 +58,7 @@ public class LhSacCommand implements SacCommand {
         descriptors.add(new AttributeDescriptor("PICKS", ValuePossibilities.NO_VALUE, null));
         descriptors.add(new AttributeDescriptor("SPECIAL", ValuePossibilities.NO_VALUE, null));
         descriptors.add(new AttributeDescriptor("INCLUSIVE", ValuePossibilities.ONE_VALUE, String.class));
+        descriptors.add(new AttributeDescriptor("AGENCY", ValuePossibilities.ONE_VALUE, String.class));
     }
 
     private final List<Integer> fileNumbers;
@@ -176,31 +176,4 @@ public class LhSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Lists the values of selected header fields.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	LISTHDR {listops} {hdrlist}\n"
-                + "	where listops are one or more of the following:\n"
-                + "		DEFAULT|PICKS|SPECIAL\n"
-                + "\n"
-                + "		FILES ALL|NONE|list\n"
-                + "\n"
-                + "		INCLUSIVE ON|OFF\n"
-                + "\n"
-                + "INPUT\n"
-                + "	DEFAULT:	Use the default list, which includes all defined header fields.\n"
-                + "	PICKS:		Use the picks list, which includes those header fields used to define time picks.\n"
-                + "	SPECIAL:	Use the special user defined list.\n"
-                + "	FILES ALL:	List headers from all files in data file list.\n"
-                + "	FILES NONE:	Don't list headers, set defaults for future commands.\n"
-                + "	FILES list:	List headers from a subset of the files in the data file list. \n"
-                + "				The subset is defined as a list of file numbers.\n"
-                + "	INCLUSIVE:	ON includes header variables which are undefined. OFF excludes them.\n"
-                + "	hdrlist:	List of header fields to be included in the special list.\n"
-                + "DEFAULT VALUES\n"
-                + "	LISTHDR DEFAULT FILES ALL INCLUSIVE OFF";
-    }
 }

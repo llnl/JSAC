@@ -94,41 +94,8 @@ public class CopyhdrSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Copies header variables from one file in memory to all others.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	COPYHDR {FROM name|n} hdrlist\n"
-                + "INPUT\n"
-                + "	FROM name:	Copy header list from named file in memory.\n"
-                + "	FROM n:	Copy header list from numbered file in memory.\n"
-                + "	hdrlist:	Space delimited list of header variables to copy.\n"
-                + "DEFAULT VALUES\n"
-                + "	COPYHDR FROM 1\n"
-                + "DESCRIPTION\n"
-                + "	This command lets you copy the values of any SAC header variable from one file in memory to all of the remaining files in memory. You can select which file you want to copy from.\n"
-                + "EXAMPLES\n"
-                + "	Assume you are using PPK to mark several times in the header of a file called FILE1. \n"
-                + "	You are using the header variables T3 and T4. To copy those same markers into files FILE2 and FILE3:\n"
-                + "\n"
-                + "	SAC> READ FILE1\n"
-                + "	SAC> PPK\n"
-                + "	SAC> ... use cursor to mark times T3 and T4.\n"
-                + "	SAC> READ MORE FILE2 FILE3\n"
-                + "	SAC> COPYHDR FROM 1 T3 T4\n"
-                + "	In this next example, assume you have read in a large number of files and you want to \n"
-                + "	copy the event location, EVLA and EVLO, from the file called ABC into all of the other \n"
-                + "	headers. This can be easily done by referencing the file by name not number:\n"
-                + "\n"
-                + "	SAC> COPYHDR FROM ABC STLA STLO\n"
-                + "HEADER CHANGES\n"
-                + "	Potentially all.";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
-        String[] names = {"COPYHDR"};
+        String[] names = { "COPYHDR" };
         return new ArrayList<>(Arrays.asList(names));
     }
 

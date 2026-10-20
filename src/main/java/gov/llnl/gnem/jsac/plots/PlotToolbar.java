@@ -39,13 +39,10 @@ import gov.llnl.gnem.jsac.plots.actions.PrintAction;
 import gov.llnl.gnem.jsac.plots.actions.ReduceAction;
 import gov.llnl.gnem.jsac.plots.actions.UnzoomAllAction;
 
-/**
- *
- * @author dodge1
- */
+
 public class PlotToolbar extends JToolBar {
 
-    public PlotToolbar(JFrame frame, SharedPlotPanel viewer) {
+    public PlotToolbar(JFrame frame, SharedPlotPanel viewer, boolean isTimeDomain) {
         CloseAction ca = new CloseAction(this);
         ca.setTarget(frame);
         JButton button = new JButton(ca);
@@ -62,17 +59,17 @@ public class PlotToolbar extends JToolBar {
         button = new JButton(pa);
         addButton(button);
         addSeparator();
+        if (isTimeDomain) {
+            MagnifyAction ma = new MagnifyAction(this);
+            ma.setPlot(viewer);
+            button = new JButton(ma);
+            addButton(button);
 
-        MagnifyAction ma = new MagnifyAction(this);
-        ma.setPlot(viewer);
-        button = new JButton(ma);
-        addButton(button);
-
-        ReduceAction ra = new ReduceAction(this);
-        ra.setPlot(viewer);
-        button = new JButton(ra);
-        addButton(button);
-
+            ReduceAction ra = new ReduceAction(this);
+            ra.setPlot(viewer);
+            button = new JButton(ra);
+            addButton(button);
+        }
         AutoScaleAction aa = new AutoScaleAction(this);
         aa.setPlot(viewer);
         button = new JButton(aa);
@@ -93,11 +90,12 @@ public class PlotToolbar extends JToolBar {
         addButton(button);
         addSeparator();
 
-        OpenPickPrefsAction oppa = new OpenPickPrefsAction(this);
-        oppa.setTarget(frame);
-        button = new JButton(oppa);
-        addButton(button);
-
+        if (isTimeDomain) {
+            OpenPickPrefsAction oppa = new OpenPickPrefsAction(this);
+            oppa.setTarget(frame);
+            button = new JButton(oppa);
+            addButton(button);
+        }
         JPanel spacer = new JPanel();
         spacer.setPreferredSize(new Dimension(500, 10));
         add(spacer);

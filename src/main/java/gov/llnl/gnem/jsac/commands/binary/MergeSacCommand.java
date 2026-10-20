@@ -41,7 +41,7 @@ import gov.llnl.gnem.jsac.io.SACDataEncoding;
 import gov.llnl.gnem.jsac.util.PathManager;
 import gov.llnl.gnem.jsac.util.TraceMerger;
 import gov.llnl.gnem.jsac.util.TraceMerger.GapStrategy;
-import llnl.gnem.dftt.core.util.StreamKey;
+import llnl.gnem.core.util.StreamKey;
 
 /**
  *
@@ -126,32 +126,6 @@ public class MergeSacCommand implements SacCommand {
                 SacDataModel.getInstance().add(std);
             }
         }
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Merges (concantenates) a set of files to data in memory.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	MERGE  {GAP ZERO|INTERP} \n"
-                + "     {MAX_SAMPLE_INCONSISTENCY v} {filelist}\n"
-                + "INPUT\n"
-                + "	GAP ZERO | INTERP:\n"
-                + " 	\n"
-                + "	ZERO - Fill gap samples with 0.0 amplitude [default]\n"
-                + "	INTERP - Use linear prediction filter to fill gap samples\n"
-                + " 	MAX_SAMPLE_INCONSISTENCY For input files, predicted NPTS error based on (B,E,DELTA) must be less than this (default = 0.5)\n"
-                + "\n"
-                + "FILELIST:	\n"
-                + "	A list of SAC binary data files. This list must contain simple filenames  (full or relative pathnames)\n"
-                + "	\n"
-                + "DESCRIPTION\n"
-                + "	The data in the files in this merge list is appended or concantenated to the data in memory. \n"
-                + "	Each pair of files to be merged is checked to make sure they have the same sampling interval and StreamKey. \n"
-                + "	Any number of file, in any order are able to be merged. Data currently in memory and data \n"
-                + "	identified in the merge command are merged together. \n"
-                + "	If no data is specified with the merge command, data currently in memory will be merged.";
     }
 
     @Override

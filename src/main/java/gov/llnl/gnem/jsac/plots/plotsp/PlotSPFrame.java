@@ -28,7 +28,7 @@ import java.awt.BorderLayout;
 import javax.swing.JFrame;
 
 import gov.llnl.gnem.jsac.plots.PlotPanelTab;
-import llnl.gnem.dftt.core.gui.util.PersistentPositionContainer;
+import llnl.gnem.core.gui.util.PersistentPositionContainer;
 
 /**
  *
@@ -41,7 +41,7 @@ public class PlotSPFrame extends PersistentPositionContainer{
     {
         super(preferencePath, title, width,height );
 
-        plotPanelTab = new PlotPanelTab(this,PlotSPPanel.getInstance());
+        plotPanelTab = new PlotPanelTab(this,PlotSPPanel.getInstance(),false);
         this.getContentPane().add(plotPanelTab, BorderLayout.CENTER);
         this.setDefaultCloseOperation(JFrame.ICONIFIED);
     }

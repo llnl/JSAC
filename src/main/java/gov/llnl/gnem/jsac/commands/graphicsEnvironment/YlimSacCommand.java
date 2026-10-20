@@ -37,7 +37,7 @@ import gov.llnl.gnem.jsac.commands.AttributeDescriptor;
 import gov.llnl.gnem.jsac.commands.SacCommand;
 import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import gov.llnl.gnem.jsac.plots.Ylimits;
 
 /**
@@ -65,7 +65,7 @@ public class YlimSacCommand implements SacCommand {
     @Override
     public void initialize(String[] tokens) {
         Map<String, List<Object>> parsedTokens = TokenListParser.parseTokens(descriptors, tokens);
-        Ylimits limits = PlotAxes.getInstance().getYlimits();
+        Ylimits limits = PlotPrefs.getInstance().getYlimits();
 
         List<Object> tmp = parsedTokens.remove("ON");
         if (tmp != null) {
@@ -108,28 +108,6 @@ public class YlimSacCommand implements SacCommand {
                 }
             }
         }
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Determines the plot limits for the y axis.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	YLIM {ON|OFF|ALL|min max|PM v ....}\n"
-                + "INPUT\n"
-                + "	{ON}:	Turn y limits option on, but don't change limits.\n"
-                + "	OFF:	Turn y limits option off.\n"
-                + "	ALL:	Scale y limits to the minimum and maximum of all files in memory.\n"
-                + "	min max:	Turn fixed y option on and change limits to min and max.\n"
-                + "	PM v:	Turn fixed y option on and change limits to minus and plus the \n"
-                + "			absolute value of v. ,SKIP You may define different y limit \n"
-                + "			options for each file in memory if you wish. The first entry in \n"
-                + "			the command applies to the first file in memory, the second entry \n"
-                + "			to the second file, etc. The last entry applies to the remainder \n"
-                + "			of the files in memory.\n"
-                + "DEFAULT VALUES\n"
-                + "	YLIM OFF";
     }
 
     @Override

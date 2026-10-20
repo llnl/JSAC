@@ -28,7 +28,7 @@ import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.FilterDesignData;
-import llnl.gnem.dftt.core.gui.util.PersistentPositionContainer;
+import llnl.gnem.core.gui.util.PersistentPositionContainer;
 
 public class PlotFilterDesignFrame extends PersistentPositionContainer {
 

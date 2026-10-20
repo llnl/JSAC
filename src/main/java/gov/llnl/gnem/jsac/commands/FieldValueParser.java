@@ -44,11 +44,11 @@ import gov.llnl.gnem.jsac.io.enums.DataQuality;
 import gov.llnl.gnem.jsac.io.enums.DepVarType;
 import gov.llnl.gnem.jsac.io.enums.EventType;
 import gov.llnl.gnem.jsac.io.enums.FileType;
+import gov.llnl.gnem.jsac.io.enums.Iztype;
 import gov.llnl.gnem.jsac.io.enums.MagSource;
 import gov.llnl.gnem.jsac.io.enums.MagType;
 import gov.llnl.gnem.jsac.io.enums.SyntheticsType;
-import llnl.gnem.dftt.core.io.SAC.Iztype;
-import llnl.gnem.dftt.core.util.TimeT;
+import llnl.gnem.core.util.TimeT;
 
 /**
  *
@@ -60,7 +60,7 @@ public class FieldValueParser {
     private static final Set<String> RELATIVE_TIME_FIELDS = new HashSet<>();
 
     static {
-        Class c = SACHeader.class;
+        Class<SACHeader> c = SACHeader.class;
         Field[] fields = c.getDeclaredFields();
         for (Field f : fields) {
             String fieldName = f.getName().toUpperCase();
@@ -84,6 +84,10 @@ public class FieldValueParser {
 
         // Some commands use 'BEGIN' as a substitute for 'B'
         NAME_TYPE_MAP.put("BEGIN", Double.class);
+        
+        // These are synthesized 'fields'
+        NAME_TYPE_MAP.put("KZTIME", String.class);
+        NAME_TYPE_MAP.put("KZDATE", String.class);
     }
 
     private static void parseGMTAssignment(List<String> mytokens, int j, Map<String, Object> parsedHeaderFields, String key) {
@@ -174,11 +178,11 @@ public class FieldValueParser {
             if (type.equals(String.class)) {
                 return token;
             } else if (type.equals(Float.class) && NumberUtils.isParsable(token)) {
-                return Float.parseFloat(token);
+                return Float.valueOf(token);
             } else if (type.equals(Double.class) && NumberUtils.isParsable(token)) {
-                return Double.parseDouble(token);
+                return Double.valueOf(token);
             } else if (type.equals(Integer.class) && NumberUtils.isParsable(token)) {
-                return Integer.parseInt(token);
+                return Integer.valueOf(token);
             } else if (type.equals(EventType.class)) {
                 return EventType.valueOf(token.toUpperCase());
             } else if (type.equals(MagType.class)) {

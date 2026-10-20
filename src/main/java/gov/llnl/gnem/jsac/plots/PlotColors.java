@@ -28,9 +28,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPreferenceListener;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPreferenceModel;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPresentationPrefs;
 
-
-public class PlotColors {
+public class PlotColors implements PlotPreferenceListener {
 
     private Color backGroundColor;
     private Color skeletonColor;
@@ -38,13 +40,15 @@ public class PlotColors {
     private boolean incrementColors;
     private int listIndex = 0;
     private final List<Color> colorList;
-
-    private static final Color[] defaultList = {Color.WHITE, Color.RED, Color.GREEN, Color.YELLOW, Color.BLUE, Color.MAGENTA, Color.CYAN, Color.BLACK, Color.DARK_GRAY, Color.GRAY, Color.LIGHT_GRAY, Color.PINK};
+    private final PlotPresentationPrefs prefs;
+    private static final Color[] defaultList = {Color.RED, Color.GREEN, Color.YELLOW, Color.BLUE, Color.MAGENTA, Color.CYAN, Color.BLACK, Color.DARK_GRAY, Color.GRAY, Color.LIGHT_GRAY, Color.PINK};
     private static final Map<String, Color> nameToColorMap = new HashMap<>();
 
     static {
         nameToColorMap.put("WHITE", Color.WHITE);
         nameToColorMap.put("RED", Color.RED);
+        nameToColorMap.put("ORANGE", Color.ORANGE);
+        nameToColorMap.put("PINK", Color.PINK);
         nameToColorMap.put("GREEN", Color.GREEN);
         nameToColorMap.put("YELLOW", Color.YELLOW);
         nameToColorMap.put("BLUE", Color.BLUE);
@@ -58,7 +62,7 @@ public class PlotColors {
     }
 
     public static Color getColorByName(String name) {
-        Color result =  nameToColorMap.get(name.toUpperCase());
+        Color result = nameToColorMap.get(name.toUpperCase());
         return result != null ? result : Color.BLACK;
     }
 
@@ -69,6 +73,9 @@ public class PlotColors {
         incrementColors = false;
         colorList = new ArrayList<>();
         resetColorList();
+        prefs = PlotPreferenceModel.getInstance().getPrefs();
+        PlotPreferenceModel.getInstance().addListener(this);
+        updateFromPlotPreferenceModel();
     }
 
     private void resetColorList() {
@@ -103,6 +110,7 @@ public class PlotColors {
         Color color = nameToColorMap.get(colorString.toUpperCase());
         if (color != null) {
             backGroundColor = color;
+            prefs.getPlotRegionPrefs().setBackgroundColor(backGroundColor);
         }
     }
 
@@ -130,11 +138,11 @@ public class PlotColors {
         }
     }
 
-
     public void setLineColor(String colorString) {
         Color color = nameToColorMap.get(colorString.toUpperCase());
         if (color != null) {
             lineColor = color;
+            prefs.setTraceColor(lineColor);
         }
     }
 
@@ -144,6 +152,16 @@ public class PlotColors {
 
     public void setIncrementColors(boolean value) {
         incrementColors = value;
+    }
+
+    @Override
+    public void preferencesChanged() {
+        updateFromPlotPreferenceModel();
+    }
+
+    private void updateFromPlotPreferenceModel() {
+        backGroundColor = prefs.getPlotRegionPrefs().getBackgroundColor();
+        lineColor = prefs.getTraceColor();
     }
 
     private static class PlotColorsHolder {

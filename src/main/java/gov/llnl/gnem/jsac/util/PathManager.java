@@ -26,7 +26,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import llnl.gnem.dftt.core.util.FileUtil.DriveMapper;
+import llnl.gnem.core.util.FileUtil.DriveMapper;
 
 /**
  *

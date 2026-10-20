@@ -66,16 +66,4 @@ public class SubSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Subtracts a constant from each data point.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	SUB {v1 {v2 ... vn} }\n"
-                + "INPUT\n"
-                + "	v1:	Constant to subtract from first file.\n"
-                + "	v2:	Constant to subtract from second file.\n"
-                + "	vn:	Constant to subtract from nth file.";
-    }
 }

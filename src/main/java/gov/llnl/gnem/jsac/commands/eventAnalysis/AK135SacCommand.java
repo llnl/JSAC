@@ -41,8 +41,8 @@ import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.io.SACHeader;
-import llnl.gnem.dftt.core.traveltime.SinglePhaseTraveltimeCalculator;
-import llnl.gnem.dftt.core.traveltime.Ak135.TraveltimeCalculatorProducer;
+import llnl.gnem.core.traveltime.SinglePhaseTraveltimeCalculator;
+import llnl.gnem.core.traveltime.Ak135.TraveltimeCalculatorProducer;
 
 /**
  *
@@ -148,23 +148,6 @@ public class AK135SacCommand implements SacCommand {
                 }
             }
         }
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Computes AK135 travel times for one or more phase(s) and sets the value in the specified field(s).\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	AK135  { phaseName name } { phaseName name } ...  fieldName \n"
-                + "DESCRIPTION\n"
-                + "	phaseName (or just name) is  a keyword that must be followed \n"
-                + "             by one or more valid AK135 phase labels.\n"
-                + "	fieldName:	One of T0 through T9. \n"
-                + "     The number of requested phases should be <= 10 -i where Ti is the requested field"
-                + "             "
-                + "OPTIONAL\n"
-                + "     AK135 LIST will merely list the phases for which the model can compute travel times.";
     }
 
     @Override

@@ -77,42 +77,4 @@ public class HilbertSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Applies a Hilbert transform to each data file in memory.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "\n"
-                + "	HILBERT { [SP]ECTRAL | FIR }\n"
-                + "\n"
-                + "INPUT\n"
-                + "\n"
-                + "[SP]ECTRAL:    Use the spectral Hilbert transform method.\n"
-                + "FIR:           Apply a Hilbert transform by convolution with an FIR operator.\n"
-                + "\n"
-                + "DEFAULT VALUES\n"
-                + "\n"
-                + "HILBERT SPECTRAL\n"
-                + "\n"
-                + "DESCRIPTION\n"
-                + "	Each trace in the data file list is replaced by its Hilbert transform, x(n).  Two transform\n"
-                + " implementations are available.  The first is the spectral method, which computes an FFT of \n"
-                + " the data, multiplies the transform by the (sampled) theoretical Hilbert response, then computes\n"
-                + " an inverse FFT to obtain a time-domain result.  The second is a time domain method which convolves\n"
-                + " the trace data with a 201-point FIR filter designed by the Parks-McClellan algorithm to closely \n"
-                + " approximate the Hilbert transform in the frequency domain.\n"
-                + "\n"
-                + "  Both methods have their plusses and minuses.  The spectral method is closer to the nominal response\n"
-                + " around 0 Hz and the folding frequency, but its implied response near 0 Hz and the folding frequency\n"
-                + " rings due to the Gibbs phenomenon.  This non-intuitive characteristic of the method occurs due to \n"
-                + " the fact that the method operates on a sampled version of the data spectrum rather than the continuous\n"
-                + " spectrum.  The method is exact on the sampled spectrum but not on the continuous spectrum.  By contrast\n"
-                + " the FIR method is not exact on the sampled spectrum (deviating significantly in the lowest 2.5% and \n"
-                + " highest 2.5% of the discrete-time spectrum).  But its continuous spectrum is well-behaved, without\n"
-                + " overshoot.  If the loss of the lowest 2.5% of the spectrum is a problem, one can decimate the data to\n"
-                + " move its spectrum higher into the mid-band where the FIR operator is highly accurate.";
-
-    }
-
 }

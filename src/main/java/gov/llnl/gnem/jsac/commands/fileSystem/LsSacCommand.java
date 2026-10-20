@@ -71,12 +71,4 @@ public class LsSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	A simple emulation of the operating system ls command\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	ls arg1 arg2 ... argn";
-    }
 }

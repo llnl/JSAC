@@ -1,4 +1,4 @@
-File,Source of data (Providence of file)
+File,Source of data (provenance of file)
 ,
 ./src/main/resources/gov/llnl/gnem/jsac/commands/seismogram.sac,"Station CDV record from the original SAC2000 https://github.com/LLNL/SAC2000/tree/main/misc/datagen/local , used to generate seismograms when using ""funcgen seismogram"" command"
 ./src/main/resources/gov/llnl/gnem/jsac/commands/seismogram.txt,sacalpha version of seismogram.sac
@@ -32,6 +32,8 @@ File,Source of data (Providence of file)
 ./src/test/resources/gov/llnl/gnem/jsac/commands/dataFile/file2.sac,FUNCGEN TRIANGL
 ./src/test/resources/gov/llnl/gnem/jsac/commands/dataFile/file3.sac,FUNCGEN BOXCAR
 ./src/test/resources/gov/llnl/gnem/jsac/commands/dataFile/file4.sac,FUNCGEN TRIANGL
+./src/test/resources/gov/llnl/gnem/jsac/commands/dataFile/sync_test_file3.sac,"Generated from ""funcgen seismogram"" in SAC"
+./src/test/resources/gov/llnl/gnem/jsac/commands/dataFile/sync_test_file4.sac,"Generated from ""funcgen seismogram"" in SAC"
 ./src/test/resources/gov/llnl/gnem/jsac/commands/filtering/bpChebyshev2Truth.sac,"Generated from ""funcgen seismogram"" in SAC"
 ./src/test/resources/gov/llnl/gnem/jsac/commands/filtering/brChebyshev2Truth.sac,"Generated from ""funcgen seismogram"" in SAC"
 ./src/test/resources/gov/llnl/gnem/jsac/commands/filtering/hpChebyshev1Truth.sac,"Generated from ""funcgen seismogram"" in SAC"

@@ -1,0 +1,110 @@
+/*-
+ * #%L
+ * Java Seismic Analysis Code (JSAC)
+ *  LLNL-CODE-855505
+ *  This work was performed under the auspices of the U.S. Department of Energy
+ *  by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344.
+ * %%
+ * Copyright (C) 2022 - 2023 Lawrence Livermore National Laboratory
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+package gov.llnl.gnem.jsac.plots.plotDFIRDesign;
+
+import java.util.Observable;
+import java.util.Observer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gov.llnl.gnem.jsac.plots.PlotColors;
+import gov.llnl.gnem.jsac.plots.PlotUtils;
+import gov.llnl.gnem.jsac.plots.SharedPlotPanel;
+import llnl.gnem.core.gui.plotting.ZoomLimits;
+import llnl.gnem.core.gui.plotting.colormap.DefinedColormap;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JPlotKeyMessage;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JSubplot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.XAxis;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.YAxis;
+import llnl.gnem.core.gui.plotting.plotobject.Line;
+import llnl.gnem.core.gui.plotting.transforms.Coordinate;
+
+public class DFIRDesignPanel extends SharedPlotPanel implements Observer {
+
+    private final JSubplot subplot;
+    
+    public DFIRDesignPanel() {
+        super(JMultiAxisPlot.XAxisType.Standard);
+        subplot = addSubplot();
+        addPlotObjectObserver(this);
+        
+    }
+    
+    @Override
+    public void clear() {
+        
+        subplot.Clear();
+        repaint();
+    }
+    
+    public void plotDesignData(float[] response, double df, String titleText) {
+        clear();
+        setXaxisType(XAxisType.Standard);
+        subplot.Plot(0, df, response);
+        subplot.getXaxis().setMin(0);
+        subplot.getXaxis().setMax(1.0);
+        PlotUtils.maybeSetYlimits(subplot);
+        
+        PlotUtils.setYlabelAttributes(subplot);
+        PlotUtils.setXlabelAttributes(this);
+        subplot.getPlotRegion().setBackgroundColor(PlotColors.getInstance().getBackGroundColor());
+        subplot.getYaxis().setLabelText("Amplitude");
+        getXaxis().setLabelText("Normalized Frequency");
+        PlotUtils.setXaxisColor(this);
+        PlotUtils.setSubplotAttributes(subplot);
+        String myTitle = titleText;
+        getTitle().setText(myTitle);
+        PlotUtils.renderTitle(this);
+        PlotUtils.renderBorder(this);
+        repaint();
+    }
+    
+    @Override
+    public void update(Observable o, Object obj) {
+    }
+    
+    @Override
+    public void zoomInAroundMouse(JPlotKeyMessage msg) {
+        super.zoomInAroundMouse(msg);
+    }
+    
+    @Override
+    public void magnifyTraces() {
+    }
+    
+    @Override
+    public void reduceTraces() {
+    }
+    
+    @Override
+    public void autoScaleTraces() {
+        scaleAllTraces(false);
+    }
+    
+    @Override
+    public void scaleAllTraces(boolean resetYlimits) {
+    }
+ 
+}

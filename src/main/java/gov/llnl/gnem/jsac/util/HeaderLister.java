@@ -20,7 +20,6 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.util;
 
 import java.io.PrintStream;
@@ -32,7 +31,8 @@ import java.util.List;
 import gov.llnl.gnem.jsac.io.SACHeader;
 import gov.llnl.gnem.jsac.io.enums.MagSource;
 import gov.llnl.gnem.jsac.io.enums.MagType;
-import llnl.gnem.dftt.core.util.TimeT;
+import llnl.gnem.core.util.TimeT;
+import llnl.gnem.core.util.Geometry.FlynnEngdahl;
 
 /**
  *
@@ -56,13 +56,13 @@ public class HeaderLister {
     private final List<String> specialList;
 
     static {
-        String[] foo = { "NPTS", "B", "E", "O", "A", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "F", "KZDATE", "KZTIME" };
+        String[] foo = {"NPTS", "B", "E", "O", "A", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "F", "KZDATE", "KZTIME"};
         picks = new ArrayList<>(Arrays.asList(foo));
-        String[] foo2 = { "NPTS", "B", "E", "IFTYPE", "LEVEN", "DELTA", "ODELTA", "IDEP", "DEPMIN", "DEPMAX", "DEPMEN", "O", "A", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "F",
-                "KZDATE", "KZTIME", "IZTYPE", "KINST", "RESP0", "RESP1", "RESP2", "RESP3", "RESP4", "RESP5", "RESP6", "RESP7", "RESP8", "RESP9", "KDATRD", "KSTNM", "CMPAZ", "CMPINC", "ISTREG", "STLA",
-                "STLO", "STEL", "STDP", "KEVNM", "IEVREG", "EVLA", "EVLO", "EVEL", "EVDP", "IEVTYP", "KHOLE", "DIST", "AZ", "BAZ", "GCARC", "LOVROK", "IQUAL", "ISYNTH", "USER0", "USER1", "USER2",
-                "USER3", "USER4", "USER5", "USER6", "USER7", "USER8", "USER9", "KUSER0", "KUSER1", "KUSER2", "NXSIZE", "XMINIMUM", "XMAXIMUM", "NYSIZE", "YMINIMUM", "YMAXIMUM", "NVHDR", "SCALE",
-                "NORID", "NEVID", "NWFID", "IINST", "LPSPOL", "LCALDA", "KCMPNM", "AGENCY", "KNETWK", "MAG", "IMAGTYP", "IMAGSRC" };
+        String[] foo2 = {"NPTS", "B", "E", "IFTYPE", "LEVEN", "DELTA", "ODELTA", "IDEP", "DEPMIN", "DEPMAX", "DEPMEN", "O", "A", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "F",
+            "KZDATE", "KZTIME", "IZTYPE", "KINST", "RESP0", "RESP1", "RESP2", "RESP3", "RESP4", "RESP5", "RESP6", "RESP7", "RESP8", "RESP9", "KDATRD", "KSTNM", "CMPAZ", "CMPINC", "ISTREG", "STLA",
+            "STLO", "STEL", "STDP", "KEVNM", "IEVREG", "EVLA", "EVLO", "EVEL", "EVDP", "IEVTYP", "KHOLE", "DIST", "AZ", "BAZ", "GCARC", "LOVROK", "IQUAL", "ISYNTH", "SCENARIO", "USER0", "USER1", "USER2",
+            "USER3", "USER4", "USER5", "USER6", "USER7", "USER8", "USER9", "KUSER0", "KUSER1", "KUSER2", "NXSIZE", "XMINIMUM", "XMAXIMUM", "NYSIZE", "YMINIMUM", "YMAXIMUM", "NVHDR", "SCALE",
+            "NORID", "NEVID", "NWFID", "IINST", "LPSPOL", "LCALDA", "KCMPNM", "AGENCY", "KNETWK", "MAG", "IMAGTYP", "IMAGSRC"};
         defaults = new ArrayList<>(Arrays.asList(foo2));
     }
 
@@ -77,14 +77,14 @@ public class HeaderLister {
         out.println(String.format("FILE: %s", fileName));
         out.println("---------------------------------------------------");
         switch (listType) {
-        case DEFAULT:
-            listHeaderP(header, out, defaults, agency);
-            break;
-        case PICKS:
-            listHeaderP(header, out, picks, agency);
-            break;
-        case SPECIAL:
-            listHeaderP(header, out, specialList, agency);
+            case DEFAULT:
+                listHeaderP(header, out, defaults, agency);
+                break;
+            case PICKS:
+                listHeaderP(header, out, picks, agency);
+                break;
+            case SPECIAL:
+                listHeaderP(header, out, specialList, agency);
         }
     }
 
@@ -126,153 +126,153 @@ public class HeaderLister {
 
     private String getSpecialFormatting(String str, Object obj, SACHeader header) {
         switch (str) {
-        case ("O"): {
+            case ("O"): {
 
-            if (obj != null) {
-                Double tmp = (Double) obj;
-                String tmpStr = header.getKo();
-                if (tmpStr == null) {
-                    tmpStr = "O";
-                }
-                return String.format(" OMARKER =  %-7.2f          (%s)", tmp, tmpStr.trim());
-            } else {
-                return String.format(" OMARKER =  UNDEFINED");
-            }
-        }
-        case ("A"): {
-            if (obj != null) {
-                Double tmp = (Double) obj;
-                String tmpStr = header.getKa();
-                if (tmpStr == null) {
-                    return String.format(" AMARKER =  %-7.2f", tmp);
+                if (obj != null) {
+                    Double tmp = (Double) obj;
+                    String tmpStr = header.getKo();
+                    if (tmpStr == null) {
+                        tmpStr = "O";
+                    }
+                    return String.format(" OMARKER =  %-7.2f          (%s)", tmp, tmpStr.trim());
                 } else {
-                    return String.format(" AMARKER =  %-7.2f          (%s)", tmp, tmpStr.trim());
+                    return String.format(" OMARKER =  UNDEFINED");
                 }
-            } else {
-                return String.format(" AMARKER =  UNDEFINED");
             }
-        }
-        case ("F"): {
-            if (obj != null) {
-                Double tmp = (Double) obj;
-                String tmpStr = header.getKf();
-                if (tmpStr == null) {
-                    return String.format(" FMARKER =  %-7.2f ", tmp);
+            case ("A"): {
+                if (obj != null) {
+                    Double tmp = (Double) obj;
+                    String tmpStr = header.getKa();
+                    if (tmpStr == null) {
+                        return String.format(" AMARKER =  %-7.2f", tmp);
+                    } else {
+                        return String.format(" AMARKER =  %-7.2f          (%s)", tmp, tmpStr.trim());
+                    }
                 } else {
-                    return String.format(" FMARKER =  %-7.2f     (%s)", tmp, tmpStr.trim());
+                    return String.format(" AMARKER =  UNDEFINED");
                 }
-            } else {
-                return String.format(" FMARKER =  UNDEFINED");
             }
-        }
-        case "T0":
-        case "T1":
-        case "T2":
-        case "T3":
-        case "T4":
-        case "T5":
-        case "T6":
-        case "T7":
-        case "T8":
-        case "T9": {
-            int idx = Integer.parseInt(str.substring(1));
-            return header.getTString(idx);
-        }
-        case "KZDATE": {
-            Double refTime = header.getReferenceTime();
-            if (refTime == null) {
-                return "    KZDATE = UNDEFINED";
-            } else {
-                TimeT time = new TimeT(refTime);
-                String kzdate = time.toString("MMM dd (DDD), yyyy").toUpperCase();
-                return String.format("  KZDATE =  %s", kzdate);
+            case ("F"): {
+                if (obj != null) {
+                    Double tmp = (Double) obj;
+                    String tmpStr = header.getKf();
+                    if (tmpStr == null) {
+                        return String.format(" FMARKER =  %-7.2f ", tmp);
+                    } else {
+                        return String.format(" FMARKER =  %-7.2f     (%s)", tmp, tmpStr.trim());
+                    }
+                } else {
+                    return String.format(" FMARKER =  UNDEFINED");
+                }
             }
-        }
-        case "KZTIME": {
-            Double refTime = header.getReferenceTime();
-            if (refTime == null) {
-                return "    KZTIME = UNDEFINED";
-            } else {
-                TimeT time = new TimeT(refTime);
-                String kztime = time.toString("HH:mm:ss.SSS");
-                return String.format("  KZTIME =  %s", kztime);
+            case "T0":
+            case "T1":
+            case "T2":
+            case "T3":
+            case "T4":
+            case "T5":
+            case "T6":
+            case "T7":
+            case "T8":
+            case "T9": {
+                int idx = Integer.parseInt(str.substring(1));
+                return header.getTString(idx);
             }
-        }
-        case "IFTYPE": {
-            String value = obj == null ? "UNDEFINED" : header.getIftype().getDescription().toUpperCase();
-            return String.format("%8s =  %s", str, value);
-        }
-        case "LEVEN": {
-            Integer leven = (Integer) obj;
-            String value = obj == null ? "UNDEFINED" : (leven > 0 ? "TRUE" : "FALSE");
-            return String.format("%8s =  %s", str, value);
-        }
-        case "IZTYPE": {
-            String value = obj == null ? "UNDEFINED" : obj.toString().toUpperCase();
-            return String.format("%8s =  %s", str, value);
-        }
-        case "IEVREG": {
-            Integer ievreg = (Integer) obj;
-            String value = ievreg == null ? "UNDEFINED" : FlynnEngdahl.getInstance().getRegionName(ievreg);
-            return String.format("%8s =  %s", str, value);
-        }
-        case "IEVTYP": {
-            String value = obj == null ? "UNDEFINED" : obj.toString();
-            return String.format("%8s  = %s", str, value);
-        }
-        case "IMAGTYP": {
-            if (obj != null) {
-                MagType magtype = header.getImagtyp();
-                return String.format("%8s =  %s", str, magtype.getDescription());
-            } else {
-                return String.format("%8s = %s", str, "UNDEFINED");
+            case "KZDATE": {
+                Double refTime = header.getReferenceTime();
+                if (refTime == null) {
+                    return "    KZDATE = UNDEFINED";
+                } else {
+                    TimeT time = new TimeT(refTime);
+                    String kzdate = time.toString("MMM dd (DDD), yyyy").toUpperCase();
+                    return String.format("  KZDATE =  %s", kzdate);
+                }
             }
-        }
-        case "IMAGSRC": {
-
-            if (obj != null) {
-                MagSource imagsrc = header.getImagsrc();
-                if (imagsrc != null) {
-                    return String.format("%8s = %s", str, imagsrc.getDescription());
+            case "KZTIME": {
+                Double refTime = header.getReferenceTime();
+                if (refTime == null) {
+                    return "    KZTIME = UNDEFINED";
+                } else {
+                    TimeT time = new TimeT(refTime);
+                    String kztime = time.toString("HH:mm:ss.SSS");
+                    return String.format("  KZTIME =  %s", kztime);
+                }
+            }
+            case "IFTYPE": {
+                String value = obj == null ? "UNDEFINED" : header.getIftype().getDescription().toUpperCase();
+                return String.format("%8s =  %s", str, value);
+            }
+            case "LEVEN": {
+                Integer leven = (Integer) obj;
+                String value = obj == null ? "UNDEFINED" : (leven > 0 ? "TRUE" : "FALSE");
+                return String.format("%8s =  %s", str, value);
+            }
+            case "IZTYPE": {
+                String value = obj == null ? "UNDEFINED" : obj.toString().toUpperCase();
+                return String.format("%8s =  %s", str, value);
+            }
+            case "IEVREG": {
+                Integer ievreg = (Integer) obj;
+                String value = ievreg == null ? "UNDEFINED" : FlynnEngdahl.getInstance().getRegionName(ievreg);
+                return String.format("%8s =  %s", str, value);
+            }
+            case "IEVTYP": {
+                String value = obj == null ? "UNDEFINED" : obj.toString();
+                return String.format("%8s  = %s", str, value);
+            }
+            case "IMAGTYP": {
+                if (obj != null) {
+                    MagType magtype = header.getImagtyp();
+                    return String.format("%8s =  %s", str, magtype.getDescription());
                 } else {
                     return String.format("%8s = %s", str, "UNDEFINED");
                 }
             }
-        }
+            case "IMAGSRC": {
 
-        case "LOVROK": {
-            Integer lovrok = (Integer) obj;
-            String value = lovrok == null ? "UNDEFINED" : (lovrok > 0 ? "TRUE" : "FALSE");
-            return String.format("%8s =  %s", str, value);
-        }
-        case "IQUAL": {
-            String value = obj == null ? "UNDEFINED" : obj.toString();
-            return String.format("%8s =  %s", str, value);
-        }
-        case "IDEP": {
-            String value = "UNDEFINED";
-            if (obj != null) {
-                value = header.getIdep().getDescription().toUpperCase();
+                if (obj != null) {
+                    MagSource imagsrc = header.getImagsrc();
+                    if (imagsrc != null) {
+                        return String.format("%8s = %s", str, imagsrc.getDescription());
+                    } else {
+                        return String.format("%8s = %s", str, "UNDEFINED");
+                    }
+                }
             }
-            return String.format("%8s =  %s", str, value);
 
-        }
-        case "LPSPOL": {
-            String value = "UNDEFINED";
-            if (obj != null) {
-                int tmp = (Integer) obj;
-                value = tmp > 0 ? "TRUE" : "FALSE";
+            case "LOVROK": {
+                Integer lovrok = (Integer) obj;
+                String value = lovrok == null ? "UNDEFINED" : (lovrok > 0 ? "TRUE" : "FALSE");
+                return String.format("%8s =  %s", str, value);
             }
-            return String.format("%8s =  %s", str, value);
-        }
-        case "LCALDA": {
-            String value = "UNDEFINED";
-            if (obj != null) {
-                int tmp = (Integer) obj;
-                value = tmp > 0 ? "TRUE" : "FALSE";
+            case "IQUAL": {
+                String value = obj == null ? "UNDEFINED" : obj.toString();
+                return String.format("%8s =  %s", str, value);
             }
-            return String.format("%8s =  %s", str, value);
-        }
+            case "IDEP": {
+                String value = "UNDEFINED";
+                if (obj != null) {
+                    value = header.getIdep().getDescription().toUpperCase();
+                }
+                return String.format("%8s =  %s", str, value);
+
+            }
+            case "LPSPOL": {
+                String value = "UNDEFINED";
+                if (obj != null) {
+                    int tmp = (Integer) obj;
+                    value = tmp > 0 ? "TRUE" : "FALSE";
+                }
+                return String.format("%8s =  %s", str, value);
+            }
+            case "LCALDA": {
+                String value = "UNDEFINED";
+                if (obj != null) {
+                    int tmp = (Integer) obj;
+                    value = tmp > 0 ? "TRUE" : "FALSE";
+                }
+                return String.format("%8s =  %s", str, value);
+            }
         }
         return null;
     }

@@ -22,6 +22,7 @@
  */
 package gov.llnl.gnem.jsac.commands;
 
+import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,21 +53,42 @@ public class SacCommandParser {
         return new ArrayList<>(history);
     }
 
-    public void initialize()  {
+    public void initialize() {
         ServiceLoader<SacCommand> commands = ServiceLoader.load(SacCommand.class);
+
+        boolean isHeadless = GraphicsEnvironment.isHeadless();
+        if (isHeadless) {
+            System.out.println("Headless environment detected, omitting graphical commands.");
+        }
         for (SacCommand command : commands) {
             if (command == null || command instanceof NullSacCommand) {
                 continue;
             }
+
+            //Check if this is a headless environment and, if so, 
+            //skip over any commands under the graphics sub packages
             Collection<String> strings = command.getCommandNames();
             for (String s : strings) {
-                cmdStringMap.put(s, command);
+                if (!isHeadless || (!s.isBlank() && !command.getClass().getName().contains("gov.llnl.gnem.jsac.commands.graphics"))) {
+                    cmdStringMap.put(s, command);
+                }
             }
         }
     }
 
     public SacCommand getHelpString(String cmd) {
         return cmdStringMap.get(cmd);
+    }
+
+    public List<String> getCommands() {
+        List<String> commands = new ArrayList<>();
+        for (SacCommand command : cmdStringMap.values()) {
+            if (command == null || command instanceof NullSacCommand) {
+                continue;
+            }
+            commands.addAll(command.getCommandNames());
+        }
+        return commands;
     }
 
     public Map<String, Set<String>> getCommandMap() {

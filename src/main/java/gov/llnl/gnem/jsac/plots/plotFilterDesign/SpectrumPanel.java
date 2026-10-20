@@ -28,14 +28,14 @@ import org.apache.commons.math3.complex.Complex;
 
 import gov.llnl.gnem.jsac.plots.PlotColors;
 import gov.llnl.gnem.jsac.plots.PlotUtils;
-import llnl.gnem.dftt.core.gui.plotting.AxisScale;
-import llnl.gnem.dftt.core.gui.plotting.HorizPinEdge;
-import llnl.gnem.dftt.core.gui.plotting.Legend;
-import llnl.gnem.dftt.core.gui.plotting.PenStyle;
-import llnl.gnem.dftt.core.gui.plotting.VertPinEdge;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JSubplot;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.Line;
+import llnl.gnem.core.gui.plotting.AxisScale;
+import llnl.gnem.core.gui.plotting.HorizPinEdge;
+import llnl.gnem.core.gui.plotting.Legend;
+import llnl.gnem.core.gui.plotting.PenStyle;
+import llnl.gnem.core.gui.plotting.VertPinEdge;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JSubplot;
+import llnl.gnem.core.gui.plotting.plotobject.Line;
 
 public class SpectrumPanel extends JMultiAxisPlot {
 

@@ -34,10 +34,10 @@ import gov.llnl.gnem.jsac.commands.SacCommand;
 import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
 import gov.llnl.gnem.jsac.plots.CLabel;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import gov.llnl.gnem.jsac.plots.PlotColors;
-import llnl.gnem.dftt.core.gui.plotting.HorizAlignment;
-import llnl.gnem.dftt.core.gui.plotting.VertAlignment;
+import llnl.gnem.core.gui.plotting.HorizAlignment;
+import llnl.gnem.core.gui.plotting.VertAlignment;
 
 public class ClabelSacCommand implements SacCommand {
 
@@ -53,7 +53,7 @@ public class ClabelSacCommand implements SacCommand {
         descriptors.add(new AttributeDescriptor("COLOR", ValuePossibilities.ONE_VALUE, String.class));
     }
 
-    private static int size = PlotAxes.getInstance().getDefaultFontSize();
+    private static int size = PlotPrefs.getInstance().getDefaultFontSize();
     private static HorizAlignment horizAlignment = HorizAlignment.LEFT;
     private static VertAlignment vertAlignment = VertAlignment.BOTTOM;
     private static String fontName = "Arial";
@@ -76,13 +76,14 @@ public class ClabelSacCommand implements SacCommand {
 
         List<Object> objects = parsedTokens.remove("CLEAR");
         if (objects != null) {
-            PlotAxes.getInstance().clearCLabels();
+            PlotPrefs.getInstance().clearCLabels();
+            return;
         }
         objects = parsedTokens.remove("SIZE");
         if (objects != null) {
             for (Object aSize : objects) {
                 String tmp = (String) aSize;
-                size = PlotAxes.getInstance().getSizeFromString(tmp);
+                size = PlotPrefs.getInstance().getSizeFromString(tmp);
                 break;
             }
         }
@@ -125,58 +126,11 @@ public class ClabelSacCommand implements SacCommand {
         }
 
         CLabel label = new CLabel(labelText, fontName, textColor, x, y, size, horizAlignment, vertAlignment);
-        PlotAxes.getInstance().addCLabel(label);
+        PlotPrefs.getInstance().addCLabel(label);
     }
 
     @Override
     public void execute() {
-
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Defines general plot labels and their attributes.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	CLABEL {CLEAR}, text,{SIZE size}, POSITION x y , {HORIZ_ALIGN value}, \n"
-                + "	{VERT_ALIGN value}, {FONT value}, {COLOR value}\n"
-                + "\n"
-                + "where size is one of the following:\n"
-                + "TINY|SMALL|MEDIUM|LARGEINPUT\n"
-                + "	text:		The text of plot label. \n"
-                + "	SIZE size:	Set the plot label size.\n"
-                + "		TINY:		Tiny text size has 132 characters per line.\n"
-                + "		SMALL:		Small text size has 100 characters per line.\n"
-                + "		MEDIUM:		Medium text size has 80 characters per line.\n"
-                + "		LARGE:		Large text size has 50 characters per line.\n"
-                + "		HUGE:		Huge text size has 33 characters per line.\n"
-                + "	POSITION 	x y Define a specific position for this label. \n"
-                + "				The text is plotted at the point in the plot\n"
-                + "				coordinate system given by (x,y).\n"
-                + "	HORIZ_ALIGN LEFT|CENTER|RIGHT\n"
-                + "	VERT_ALIGN	TOP|CENTER|BOTTOM\n"
-                + "	FONT		The font to use for the label text. Multi-word font \n"
-                + "				names must be enclsed with single- or double quotes.\n"
-                + "	COLOR		The color of the label text. See the COLOR command \n"
-                + "				for the list of available colors.\n"
-                + "	CLEAR		removes all labels created using CLABEL\n"
-                + "	             \n"
-                + "DEFAULT VALUES\n"
-                + "	Default size is small.\n"
-                + "	Default HORIZ_ALIGN is LEFT\n"
-                + "	Default VERT_ALIGN is BOTTOM\n"
-                + "	Default font is Arial\n"
-                + "	Default color is BLACK\n"
-                + "\n"
-                + "DESCRIPTION\n"
-                + "	This command lets you define general purpose plot labels for subsequent \n"
-                + "	plot commands. You can define the location and size of each label. \n"
-                + "	You can also generate a title and axes labels using the TITLE, XLABEL, and YLABEL commands.\n"
-                + "EXAMPLES\n"
-                + "	The following command will generate a label at the position (14.37, 0.345):\n"
-                + "\n"
-                + "		u:  CLABEL 'Local maximum' POSITION 14.37 0.345 ";
     }
 
     @Override

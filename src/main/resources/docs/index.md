@@ -1,0 +1,2 @@
+# About
+JSAC is a Java implementation of the Seismic Analysis Code (SAC2000, https://github.com/LLNL/SAC2000). It is intended to bring the most commonly used features of SAC2000 up to date with modern standards, support parallelized computation where possible, and implement improvements in algorithms and numeric code.

@@ -54,12 +54,4 @@ public class ExpSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Computes the exponential of each data point.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	EXP";
-    }
 }

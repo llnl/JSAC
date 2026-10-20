@@ -43,7 +43,7 @@ public class SpectralData {
         this.presentationFormat = presentationFormat;
         this.originalNsamps = originalNsamps;
         blockStartIndex = 1;//Don't use zero frequency and negative frequencies for plotting.
-        blockEndIndex = frequencyDomainData.length / 2 - 1;
+        blockEndIndex = frequencyDomainData.length / 2;
         maxAllowableIndex = blockEndIndex;
     }
 
@@ -161,7 +161,6 @@ public class SpectralData {
     public float[] getImagArray() {
         float[] result = new float[frequencyDomainData.length];
         for (int j = 0; j < result.length; ++j) {
-            Complex c = frequencyDomainData[j];
             result[j] = (float) frequencyDomainData[j].getImaginary();
         }
         return result;

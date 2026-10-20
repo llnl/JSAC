@@ -23,21 +23,33 @@
 
 package gov.llnl.gnem.jsac.commands;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.IOUtils;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.text.TextContentRenderer;
+
+import gov.llnl.gnem.jsac.util.HelpStringReader;
 
 /**
  *
  * @author dodge1
  */
 public interface SacCommand {
-
+    
     void execute();
 
     void initialize(String[] tokens);
 
     public default String getHelpString() {
-        return "Help not implemented!";
+        return HelpStringReader.getHelpString(this.getClass());
     }
 
     public default Collection<String> getCommandNames() {

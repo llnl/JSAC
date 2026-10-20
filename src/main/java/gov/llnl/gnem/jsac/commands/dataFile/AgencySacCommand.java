@@ -67,25 +67,4 @@ public class AgencySacCommand implements SacCommand {
         String[] names = {"AGENCY"};
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	This command will set the agency of each data file in memory. \n"
-                + "	The agency may be the same or different for each data file. \n"
-                + "	If there are more data files in memory than agencies, then the \n"
-                + "	last agency entered is used for the remainder of the data files in memory.\n"
-                + "	To unset all agencies execute the command with no arguments. To\n"
-                + "	unset the agency for a specific file enter the agency name as --.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	AGENCY {v1 {v2 ... vn} }\n"
-                + "INPUT\n"
-                + "	v1:	Agency for first file.\n"
-                + "	v2:	Agency for second file.\n"
-                + "	vn:	Agency for nth file.\n"
-                + "\n"
-                + "DEFAULT VALUES\n"
-                + "	AGENCY NULL.";
-    }
 }

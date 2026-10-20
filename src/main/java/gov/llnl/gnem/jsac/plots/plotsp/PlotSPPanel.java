@@ -20,7 +20,6 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.plots.plotsp;
 
 import java.awt.event.KeyEvent;
@@ -34,18 +33,23 @@ import gov.llnl.gnem.jsac.commands.graphicsAction.PlotSPSacCommand.ComponentType
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacPlotData;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SpectralData;
+import gov.llnl.gnem.jsac.plots.FileIDInfo;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import gov.llnl.gnem.jsac.plots.PlotColors;
 import gov.llnl.gnem.jsac.plots.PlotDrawingData;
 import gov.llnl.gnem.jsac.plots.PlotUtils;
 import gov.llnl.gnem.jsac.plots.Scale;
 import gov.llnl.gnem.jsac.plots.SharedPlotPanel;
-import llnl.gnem.dftt.core.gui.plotting.AxisScale;
-import llnl.gnem.dftt.core.gui.plotting.MouseOverPlotObject;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JPlotKeyMessage;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JSubplot;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.Line;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.PlotObject;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.SymbolStyle;
+import gov.llnl.gnem.jsac.plots.Xlimits;
+import java.awt.Color;
+import llnl.gnem.core.gui.plotting.AxisScale;
+import llnl.gnem.core.gui.plotting.MouseOverPlotObject;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JPlotKeyMessage;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JSubplot;
+import llnl.gnem.core.gui.plotting.plotobject.Line;
+import llnl.gnem.core.gui.plotting.plotobject.PlotObject;
+import llnl.gnem.core.gui.plotting.plotobject.SymbolStyle;
 
 /**
  * @author dodge1
@@ -106,21 +110,21 @@ public class PlotSPPanel extends SharedPlotPanel implements Observer {
         Scale yScale1 = yScale;
         Scale yScale2 = yScale;
         switch (requested) {
-        case RLIM:
-            data1 = dft.getPositiveFreqRealArray();
-            ylabel1 = "Real component";
-            yScale1 = Scale.LINEAR;
-            data2 = dft.getPositiveFreqImagArray();
-            ylabel2 = "Imag component";
-            yScale2 = Scale.LINEAR;
-            break;
-        case AMPH:
-            data1 = dft.getPositiveFreqAmplitudeArray();
-            ylabel1 = "Amplitude";
-            data2 = dft.getPositiveFreqPhaseArray();
-            ylabel2 = "Phase (radians)";
-            yScale2 = Scale.LINEAR;
-            break;
+            case RLIM:
+                data1 = dft.getPositiveFreqRealArray();
+                ylabel1 = "Real component";
+                yScale1 = Scale.LINEAR;
+                data2 = dft.getPositiveFreqImagArray();
+                ylabel2 = "Imag component";
+                yScale2 = Scale.LINEAR;
+                break;
+            case AMPH:
+                data1 = dft.getPositiveFreqAmplitudeArray();
+                ylabel1 = "Amplitude";
+                data2 = dft.getPositiveFreqPhaseArray();
+                ylabel2 = "Phase (radians)";
+                yScale2 = Scale.LINEAR;
+                break;
         }
 
         if (data1 == null || data2 == null) {
@@ -139,6 +143,12 @@ public class PlotSPPanel extends SharedPlotPanel implements Observer {
         setXscale(xScale);
         double minFreq = deltaF;
         double maxFreq = data1.length * deltaF;
+        Xlimits xlimits = PlotPrefs.getInstance().getXlimits();
+        if (xlimits.isLimitsOn()) {
+            minFreq = xlimits.getPdw().getStartOffset();
+            maxFreq = xlimits.getPdw().getEndOffset();
+        }
+
         PlotUtils.setXlimits(this, subplot1, minFreq, maxFreq, xScale);
         PlotUtils.setXlimits(this, subplot2, minFreq, maxFreq, xScale);
 
@@ -165,7 +175,8 @@ public class PlotSPPanel extends SharedPlotPanel implements Observer {
         line.setColor(PlotColors.getInstance().getLineColor());
         subplot.getPlotRegion().setBackgroundColor(PlotColors.getInstance().getBackGroundColor());
         Double markerCorrection = 0.0;
-        PlotUtils.addTextToPlot(sacData, subplot, fileNumber, markerCorrection, line.getColor());
+        Color textColor = FileIDInfo.getInstance().getTextColor(line.getColor());
+        PlotUtils.addTextToPlot(sacData, subplot, fileNumber, markerCorrection, textColor);
 
         PlotUtils.setYlabelAttributes(subplot);
         subplot.getYaxis().setLabelText(ylabel1);
@@ -185,24 +196,24 @@ public class PlotSPPanel extends SharedPlotPanel implements Observer {
         String ylabel = null;
         if (null != requested) {
             switch (requested) {
-            case AM:
-                data = spd.getPositiveFreqAmplitudeArray();
-                ylabel = "Amplitude";
-                break;
-            case PH:
-                data = spd.getPositiveFreqPhaseArray();
-                ylabel = "Phase (radians)";
-                break;
-            case RL:
-                data = spd.getPositiveFreqRealArray();
-                ylabel = "Real component";
-                break;
-            case IM:
-                data = spd.getPositiveFreqImagArray();
-                ylabel = "Imag component";
-                break;
-            default:
-                break;
+                case AM:
+                    data = spd.getPositiveFreqAmplitudeArray();
+                    ylabel = "Amplitude";
+                    break;
+                case PH:
+                    data = spd.getPositiveFreqPhaseArray();
+                    ylabel = "Phase (radians)";
+                    break;
+                case RL:
+                    data = spd.getPositiveFreqRealArray();
+                    ylabel = "Real component";
+                    break;
+                case IM:
+                    data = spd.getPositiveFreqImagArray();
+                    ylabel = "Imag component";
+                    break;
+                default:
+                    break;
             }
         }
         if (data == null) {
@@ -226,13 +237,19 @@ public class PlotSPPanel extends SharedPlotPanel implements Observer {
         subplot.getPlotRegion().setBackgroundColor(PlotColors.getInstance().getBackGroundColor());
 
         Double markerCorrection = 0.0;
-        PlotUtils.addTextToPlot(sacData, subplot, fileNumber, markerCorrection, line.getColor());
+        Color textColor = FileIDInfo.getInstance().getTextColor(line.getColor());
+        PlotUtils.addTextToPlot(sacData, subplot, fileNumber, markerCorrection, textColor);
 
         setYAxisScale(subplot, yScale);
         PlotUtils.maybeSetYlimits(subplot);
         setXscale(xScale);
         double minFreq = frequencies[0];
         double maxFreq = frequencies[data.length - 1];
+        Xlimits xlimits = PlotPrefs.getInstance().getXlimits();
+        if (xlimits.isLimitsOn()) {
+            minFreq = xlimits.getPdw().getStartOffset();
+            maxFreq = xlimits.getPdw().getEndOffset();
+        }
         PlotUtils.setXlimits(this, subplot, minFreq, maxFreq, xScale);
         PlotUtils.setYlabelAttributes(subplot);
         subplot.getYaxis().setLabelText(ylabel);
@@ -276,8 +293,9 @@ public class PlotSPPanel extends SharedPlotPanel implements Observer {
     }
 
     private void scaleTraces(double factor) {
-        Collection<Line> lines = lineTraceMap.keySet();
-        PlotUtils.rescaleLines(lines, factor);
+        for (JSubplot subplot : this.lineSubplotMap.values()) {
+            JMultiAxisPlot.scaleTraces(subplot, factor);
+        }
         this.repaint();
     }
 
@@ -317,11 +335,11 @@ public class PlotSPPanel extends SharedPlotPanel implements Observer {
 
     private boolean isSinglePlot(ComponentType requested) {
         switch (requested) {
-        case RLIM:
-        case AMPH:
-            return false;
-        default:
-            return true;
+            case RLIM:
+            case AMPH:
+                return false;
+            default:
+                return true;
         }
     }
 

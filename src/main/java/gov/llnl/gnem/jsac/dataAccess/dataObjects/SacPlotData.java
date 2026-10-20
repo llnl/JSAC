@@ -26,14 +26,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SpectralData.PresentationFormat;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import gov.llnl.gnem.jsac.plots.PlotDrawingData;
 import gov.llnl.gnem.jsac.plots.PlotUtils;
 import gov.llnl.gnem.jsac.plots.Scale;
 import gov.llnl.gnem.jsac.plots.TimeMode;
 import gov.llnl.gnem.jsac.plots.Xlimits;
 import gov.llnl.gnem.jsac.util.PartialDataWindow;
-import llnl.gnem.dftt.core.util.Epoch;
+import llnl.gnem.core.util.Epoch;
 
 /**
  *
@@ -164,7 +164,7 @@ public class SacPlotData {
         if (yValues == null) {
             return;
         }
-        if (PlotAxes.getInstance().getYscale() == Scale.LOG) {
+        if (PlotPrefs.getInstance().getYscale() == Scale.LOG) {
             float minVal = (float) PlotDrawingData.getInstance().getFloorValue();
             for (int j = 0; j < yValues.length; ++j) {
                 yValues[j] = yValues[j] >= minVal ? yValues[j] : minVal;
@@ -173,7 +173,7 @@ public class SacPlotData {
     }
 
     public void maybeTrimForLogDisplay() {
-        if (PlotAxes.getInstance().getXscale() == Scale.LOG) {
+        if (PlotPrefs.getInstance().getXscale() == Scale.LOG) {
             double plotStartTime = this.xValues[0];
             double deltaT = xValues[1] - xValues[0];
             double floor = PlotDrawingData.getInstance().getFloorValue();
@@ -198,8 +198,16 @@ public class SacPlotData {
         return spectralData != null && presentationFormat != null;
     }
 
-    public float[] getMaybeShiftedXValues(TimeMode timeMode, double referenceTime) {
-        double offset = this.referenceTime - referenceTime;
+    public float[] getShiftedXValues( double shift) {
+        float[] result = new float[xValues.length];
+        for (int j = 0; j < xValues.length; ++j) {
+            result[j] = (float) (xValues[j] + shift);
+        }
+        return result;
+    }
+
+    public float[] getMaybeShiftedXValues(TimeMode timeMode, double referenceTime, double markerOffset) {
+        double offset = this.referenceTime - referenceTime-markerOffset;
         float[] result = new float[xValues.length];
         xShiftForRelativeMode = timeMode == TimeMode.RELATIVE ? -xValues[0] : offset;
         for (int j = 0; j < xValues.length; ++j) {
@@ -208,12 +216,8 @@ public class SacPlotData {
         return result;
     }
 
-    public float getxShiftForRelativeMode() {
-        return (float) xShiftForRelativeMode;
-    }
-
     public void maybeApplyXLimits(SacTraceData std) {
-        Xlimits limits = PlotAxes.getInstance().getXlimits();
+        Xlimits limits = PlotPrefs.getInstance().getXlimits();
         if (limits.isLimitsOn()) {
             int lastSample = getLastSampleIndex();
             double minVal = b;

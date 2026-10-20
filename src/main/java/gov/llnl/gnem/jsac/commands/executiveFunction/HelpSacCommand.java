@@ -51,15 +51,7 @@ public class HelpSacCommand implements SacCommand {
     @Override
     public void execute() {
         if (mytokens.isEmpty()) {
-            System.out.println("SYNTAX: HELP COMMAND_NAME where COMMAND_NAME is the name of a legal SAC command.");
-            Map<String, Set<String>> pkgMap = SacCommandParser.getInstance().getCommandMap();
-            for (String pkg : pkgMap.keySet()) {
-                System.out.println(pkg + ":");
-                Set<String> cmds = pkgMap.get(pkg);
-                for (String str : cmds) {
-                    System.out.println("\t" + str);
-                }
-            }
+            System.out.print(defaultUsage());
         } else {
             String commandName = mytokens.get(0).toUpperCase();
             SacCommand cmd = SacCommandParser.getInstance().getHelpString(commandName);
@@ -69,6 +61,28 @@ public class HelpSacCommand implements SacCommand {
                 System.out.println("Command " + commandName + " not found!");
             }
         }
+    }
+
+    private String defaultUsage() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SYNTAX: HELP COMMAND_NAME where COMMAND_NAME is the name of a legal SAC command.");
+        sb.append("\n");
+        Map<String, Set<String>> pkgMap = SacCommandParser.getInstance().getCommandMap();
+        for (String pkg : pkgMap.keySet()) {
+            sb.append(pkg + ":");
+            sb.append("\n");
+            Set<String> cmds = pkgMap.get(pkg);
+            for (String str : cmds) {
+                sb.append("\t" + str);
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String getHelpString() {
+        return defaultUsage();
     }
 
     @Override

@@ -65,17 +65,4 @@ public class AddSacCommand implements SacCommand {
         String[] names = { "ADD" };
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Adds a constant to each data point.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	ADD {v1 {v2 ... vn} }\n"
-                + "INPUT\n"
-                + "	v1:	Constant to add to first file.\n"
-                + "	v2:	Constant to add to second file.\n"
-                + "	vn:	Constant to add to nth file.";
-    }
 }

@@ -57,9 +57,10 @@ public class SACHeaderIO {
     public static final int UNDEFINED_INTEGER = -12345;
     public static final String UNDEFINED_STRING8 = "-12345  ";
     public static final String UNDEFINED_STRING16 = "-12345          ";
+    public static final String UNDEFINED_STRING16_ALT = "-12345  -12345  ";
 
     private ByteOrder byteOrder = ByteOrder.BIG_ENDIAN;
-    private FileChannel channel;
+    private final FileChannel channel;
 
     public SACHeaderIO(FileChannel channel) {
         this.channel = channel;
@@ -190,7 +191,7 @@ public class SACHeaderIO {
         retval.setImagtyp(MagType.getMagtypeFromCode(ibuffer.get()));
         retval.setImagsrc(MagSource.getMagSourceFromCode(ibuffer.get()));
         retval.setIbody(Body.getBodyFromCode(ibuffer.get()));
-        retval.setUnused20(readInteger(ibuffer));
+        retval.setScenario(readInteger(ibuffer));
         retval.setUnused21(readInteger(ibuffer));
 
         retval.setUnused22(readInteger(ibuffer));
@@ -343,7 +344,7 @@ public class SACHeaderIO {
         }
 
         String retval = new String(b);
-        if (retval.equals(UNDEFINED_STRING16) || retval.equals(UNDEFINED_STRING8)) {
+        if (retval.equals(UNDEFINED_STRING16) || retval.equals(UNDEFINED_STRING8) || retval.equals(UNDEFINED_STRING16_ALT)) {
             retval = null;
         }
 
@@ -502,7 +503,7 @@ public class SACHeaderIO {
             writeInteger(ibuffer, ibody.getCode());
         }
 
-        writeInteger(ibuffer, header.getUnused20());
+        writeInteger(ibuffer, header.getScenario());
         writeInteger(ibuffer, header.getUnused21());
         writeInteger(ibuffer, header.getUnused22());
         writeInteger(ibuffer, header.getUnused23());
@@ -780,7 +781,7 @@ public class SACHeaderIO {
         retval.setImagtyp(MagType.getMagtypeFromCode(ints.get(k++)));
         retval.setImagsrc(MagSource.getMagSourceFromCode(ints.get(k++)));
         retval.setIbody(Body.getBodyFromCode(ints.get(k++)));
-        retval.setUnused20(toInteger(ints.get(k++)));
+        retval.setScenario(toInteger(ints.get(k++)));
         retval.setUnused21(toInteger(ints.get(k++)));
 
         retval.setUnused22(toInteger(ints.get(k++)));

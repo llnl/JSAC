@@ -24,17 +24,18 @@ package gov.llnl.gnem.jsac.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Level;
 
-import llnl.gnem.dftt.core.util.ApplicationLogger;
-import llnl.gnem.dftt.core.util.FileSystemException;
-import llnl.gnem.dftt.core.util.TimeT;
-import llnl.gnem.dftt.core.util.FileUtil.DriveMapper;
-import llnl.gnem.dftt.core.util.FileUtil.FileManager;
-import llnl.gnem.dftt.core.waveform.io.BinaryData;
-import llnl.gnem.dftt.core.waveform.io.BinaryDataReader;
-import llnl.gnem.dftt.core.waveform.io.e1IO;
-import llnl.gnem.dftt.core.waveform.io.s4IO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import llnl.gnem.core.util.FileSystemException;
+import llnl.gnem.core.util.TimeT;
+import llnl.gnem.core.util.FileUtil.DriveMapper;
+import llnl.gnem.core.util.FileUtil.FileManager;
+import llnl.gnem.core.waveform.io.BinaryData;
+import llnl.gnem.core.waveform.io.BinaryDataReader;
+import llnl.gnem.core.waveform.io.e1IO;
+import llnl.gnem.core.waveform.io.s4IO;
 
 /**
  *
@@ -45,11 +46,12 @@ public class Waveform {
     private static final String dbdataGrp = "210";
     private static final String sepChar = "/"; //Specify unix separator. This must be used even if code is running on Windows.
 
-    public static int[] getSeismogramDataAsIntArray(String fname, int foff, int nsamp, String datatype) throws Exception {
+    private static final Logger log = LoggerFactory.getLogger(Waveform.class);
+    
+    public static BinaryData getSeismogramData(String fname, int foff, int nsamp, String datatype) throws Exception {
         BinaryDataReader bdr = BinaryDataReader.getReader(datatype);
         if (bdr != null) {
-            BinaryData bd = bdr.readData(fname, foff, nsamp);
-            return bd.getIntData();
+            return bdr.readData(fname, foff, nsamp);
         } else {
             throw new IllegalStateException("No BinaryDataReader was instantiated. Could not read data.");
         }
@@ -69,7 +71,7 @@ public class Waveform {
                 wroteE1 = e1IO.WriteIntData(data, numSamples, filename);
             } catch (Exception e) {
                 wroteE1 = false;
-                ApplicationLogger.getInstance().log(Level.FINER, "Failed writing e1 data!", e);
+                log.trace("Failed writing e1 data!", e);
             }
             if (!wroteE1) {
                 datatype = "s4";

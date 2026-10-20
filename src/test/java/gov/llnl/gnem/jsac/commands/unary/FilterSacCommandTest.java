@@ -41,7 +41,7 @@ import gov.llnl.gnem.jsac.commands.filtering.ChebyshevParameters;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.io.SACAlphaReader;
 import gov.llnl.gnem.jsac.io.SACFile;
-import llnl.gnem.dftt.core.signalprocessing.filter.FilterDesign;
+import llnl.gnem.core.signalprocessing.filter.FilterDesign;
 
 /**
  *

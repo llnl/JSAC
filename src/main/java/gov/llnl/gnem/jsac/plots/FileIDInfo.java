@@ -22,6 +22,7 @@
  */
 package gov.llnl.gnem.jsac.plots;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -64,6 +65,8 @@ public class FileIDInfo {
     private final List<String> hdrlist;
     private double spacingAdjustment;
     private String fieldDelimiter;
+    private Color textColor;
+    private boolean forceColor;
 
     private FileIDInfo() {
         on = true;
@@ -75,6 +78,8 @@ public class FileIDInfo {
         fontSize = 12;
         spacingAdjustment = 1;
         fieldDelimiter = ",";
+        textColor = Color.BLACK;
+        forceColor = false;
     }
 
     String getFieldDelimiter() {
@@ -154,6 +159,22 @@ public class FileIDInfo {
         this.fontSize = fontSize;
     }
 
+    public Color getTextColor() {
+        return textColor;
+    }
+
+    public void setTextColor(Color textColor) {
+        this.textColor = textColor;
+    }
+
+    public void setForceColor(boolean forceColor) {
+        this.forceColor = forceColor;
+    }
+
+    public boolean isForceColor() {
+        return forceColor;
+    }
+
     public static FileIDInfo getInstance() {
         return FileIDInfoHolder.INSTANCE;
     }
@@ -164,6 +185,14 @@ public class FileIDInfo {
 
     public void setSpacingAdjustment(double spacingAdjustment) {
         this.spacingAdjustment = spacingAdjustment;
+    }
+
+    public Color getTextColor(Color lineColor) {
+        Color tmp = lineColor;
+        if (isForceColor()) {
+            tmp = getTextColor();
+        }
+        return tmp;
     }
 
     private static class FileIDInfoHolder {

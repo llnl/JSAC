@@ -46,15 +46,6 @@ public class RmeanSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Removes the mean.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	RMEAN";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = {"RMEAN"};
         return new ArrayList<>(Arrays.asList(names));

@@ -53,13 +53,4 @@ public class LogSacCommand implements SacCommand {
         String[] names = {"LOG"};
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Takes the natural logarithm of each data point.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	LOG";
-    }
 }

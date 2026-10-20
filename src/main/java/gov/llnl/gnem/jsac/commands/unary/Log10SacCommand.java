@@ -54,12 +54,4 @@ public class Log10SacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Takes the base 10 logarithm of each data point.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	LOG10";
-    }
 }

@@ -26,8 +26,8 @@ package gov.llnl.gnem.jsac.dataAccess;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.llnl.gnem.jsac.dataAccess.dataObjects.MinMax;
-import gov.llnl.gnem.jsac.dataAccess.dataObjects.SrcCircle;
+import llnl.gnem.core.dataObjects.MinMax;
+import llnl.gnem.core.dataObjects.RestrictionCircle;
 
 /**
  *
@@ -37,6 +37,7 @@ public class DataSelectionCriteria {
 
     private final List<Long> evids;
     private final List<Long> wfids;
+    private final List<Integer> scenarioIdList;
     private final List<String> agencies;
     private final List<String> networks;
     private final List<String> stations;
@@ -53,12 +54,14 @@ public class DataSelectionCriteria {
     private MinMax srcDep = null;
     private MinMax time = null;
     private MinMax degDist = null;
-    private SrcCircle srcCircle = null;
+    private RestrictionCircle srcCircle = null;
     private int maxRows;
+    private boolean addArrivals = false;
 
     private DataSelectionCriteria() {
         evids = new ArrayList<>();
         wfids = new ArrayList<>();
+        scenarioIdList = new ArrayList<>();
         agencies = new ArrayList<>();
         networks = new ArrayList<>();
         stations = new ArrayList<>();
@@ -68,11 +71,13 @@ public class DataSelectionCriteria {
         instrumentCodes = new ArrayList<>();
         orientationCodes = new ArrayList<>();
         maxRows = 500;
+        addArrivals = false;
     }
 
     public void clear() {
         evids.clear();
         wfids.clear();
+        scenarioIdList.clear();
         agencies.clear();
         networks.clear();
         stations.clear();
@@ -181,7 +186,7 @@ public class DataSelectionCriteria {
         degDist = value;
     }
 
-    public void setSrcCircle(SrcCircle value) {
+    public void setSrcCircle(RestrictionCircle value) {
         srcCircle = value;
     }
 
@@ -265,7 +270,7 @@ public class DataSelectionCriteria {
         return degDist;
     }
 
-    public SrcCircle getSrcCircle() {
+    public RestrictionCircle getSrcCircle() {
         return srcCircle;
     }
 
@@ -273,17 +278,26 @@ public class DataSelectionCriteria {
         return !wfids.isEmpty();
     }
 
+    public boolean isAddArrivals() {
+        return addArrivals;
+    }
+
+    public void setAddArrivals(boolean addArrivals) {
+        this.addArrivals = addArrivals;
+    }
+
     public boolean isStationDriving() {
-        return evids.isEmpty() && wfids.isEmpty() && channels.isEmpty() && locids.isEmpty() && (!stations.isEmpty() || !networks.isEmpty() || (staLat != null && staLon != null));
+        return evids.isEmpty() && wfids.isEmpty() && scenarioIdList.isEmpty() && channels.isEmpty() && locids.isEmpty() && (!stations.isEmpty() || !networks.isEmpty() || (staLat != null && staLon != null));
     }
 
     public boolean isChannelDriving() {
-        return evids.isEmpty() && wfids.isEmpty() && !(channels.isEmpty() && locids.isEmpty());
+        return evids.isEmpty() && wfids.isEmpty() && scenarioIdList.isEmpty() && !(channels.isEmpty() && locids.isEmpty());
     }
 
     public boolean hasAnyCriteria() {
         return !(evids.isEmpty()
                 && wfids.isEmpty()
+                && scenarioIdList.isEmpty()
                 && agencies.isEmpty()
                 && networks.isEmpty()
                 && stations.isEmpty()
@@ -320,6 +334,14 @@ public class DataSelectionCriteria {
             }
         }
         return sb.toString();
+    }
+
+    public void addScenarioIdList(List<Integer> scids) {
+        scenarioIdList.addAll(scids);
+     }
+
+    public List<Integer> getScenarioIdList() {
+        return new ArrayList<>(scenarioIdList);
     }
 
     private static class DBSelectionCriteriaHolder {

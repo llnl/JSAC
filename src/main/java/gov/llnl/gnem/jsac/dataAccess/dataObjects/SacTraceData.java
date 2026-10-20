@@ -49,20 +49,19 @@ import gov.llnl.gnem.jsac.io.enums.EventType;
 import gov.llnl.gnem.jsac.io.enums.FileType;
 import gov.llnl.gnem.jsac.io.enums.Iztype;
 import gov.llnl.gnem.jsac.io.enums.MagType;
-import gov.llnl.gnem.jsac.util.FlynnEngdahl;
 import gov.llnl.gnem.jsac.util.HeaderLister;
 import gov.llnl.gnem.jsac.util.PartialDataWindow;
 import gov.llnl.gnem.jsac.util.WaveformUtils;
-
-import llnl.gnem.dftt.core.signalprocessing.extended.SignalProcessingException;
-import llnl.gnem.dftt.core.signalprocessing.filter.FilterDesign;
-import llnl.gnem.dftt.core.util.Epoch;
-import llnl.gnem.dftt.core.util.SeriesMath;
-import llnl.gnem.dftt.core.util.StreamKey;
-import llnl.gnem.dftt.core.util.TaperType;
-import llnl.gnem.dftt.core.util.TimeT;
-import llnl.gnem.dftt.core.waveform.merge.NamedIntWaveform;
-import llnl.gnem.dftt.core.waveform.seismogram.CssSeismogram;
+import llnl.gnem.core.signalprocessing.Miscellaneous;
+import llnl.gnem.core.signalprocessing.extended.SignalProcessingException;
+import llnl.gnem.core.signalprocessing.filter.FilterDesign;
+import llnl.gnem.core.util.Epoch;
+import llnl.gnem.core.util.SeriesMath;
+import llnl.gnem.core.util.StreamKey;
+import llnl.gnem.core.util.TaperType;
+import llnl.gnem.core.util.TimeT;
+import llnl.gnem.core.util.Geometry.FlynnEngdahl;
+import llnl.gnem.core.waveform.seismogram.CssSeismogram;
 
 /**
  * @author dodge1
@@ -157,9 +156,11 @@ public class SacTraceData {
         epoch = seis.getEpoch();
     }
 
-    public SacTraceData(NamedIntWaveform niw, Path parent) {
-        yValues = niw.getDataAsFloatArray();
+    public SacTraceData(CssSeismogram niw, Path parent) {
+        yValues = niw.getData();
         String name = WaveformUtils.createName(niw);
+        name = name.replaceAll("\\s", "_");
+        name = name.replaceAll(":", "_");
         File file = new File(parent.toFile(), name);
         filename = file.toPath();
         header = buildHeader(niw);
@@ -199,28 +200,27 @@ public class SacTraceData {
         return result;
     }
 
-    private SACHeader buildHeader(NamedIntWaveform seis) {
+    private SACHeader buildHeader(CssSeismogram seis) {
         SACHeader result = new SACHeader();
-        result.setReferenceTime(seis.getStart());
+        result.setReferenceTime(seis.getTimeAsDouble());
         result.setB(0.0);
         result.setE(getLengthInSeconds(seis));
-        result.setDelta(1.0 / seis.getRate());
-        result.setNpts(seis.getNpts());
+        result.setDelta(1.0 / seis.getSamprate());
+        result.setNpts(seis.getNsamp());
         result.setIftype(FileType.ITIME);
         result.setIdep(DepVarType.IUNKN);
         result.setIztype(Iztype.IB);
         result.setNvhdr(6);
-        result.setKstnm(seis.getKey().getSta());
-        result.setKhole(seis.getKey().getLocationCode());
-        result.setKcmpnm(seis.getKey().getChan());
-        result.setKnetwk(seis.getKey().getNet());
-        result.setKinst(seis.getInstype());
+        result.setKstnm(seis.getStreamKey().getSta());
+        result.setKhole(seis.getStreamKey().getLocationCode());
+        result.setKcmpnm(seis.getStreamKey().getChan());
+        result.setKnetwk(seis.getStreamKey().getNet());
         result.setLeven(1);
         return result;
     }
 
-    private Double getLengthInSeconds(NamedIntWaveform seis) {
-        return (seis.getNpts() - 1) / seis.getRate();
+    private Double getLengthInSeconds(CssSeismogram seis) {
+        return (seis.getNsamp() - 1) / seis.getSamprate();
     }
 
     public CssSeismogram produceSeismogram(StreamKey substituteKey, Double substituteTime) {
@@ -348,7 +348,7 @@ public class SacTraceData {
         if (!header.isEvenlySampled()) {
             throw new IllegalStateException("ERROR 1306: Illegal operation on unevenly spaced file");
         }
-        yValues = SeriesMath.envelope(yValues);
+        yValues = Miscellaneous.envelope(yValues);
     }
 
     public boolean isNonNegative() {
@@ -486,7 +486,7 @@ public class SacTraceData {
         if (!header.isEvenlySampled()) {
             throw new IllegalStateException("ERROR 1306: Illegal operation on unevenly spaced file");
         }
-        float[] tmp = SeriesMath.hilbert(yValues);
+        float[] tmp = Miscellaneous.hilbert(yValues);
         System.arraycopy(tmp, 0, yValues, 0, yValues.length);
     }
 
@@ -578,7 +578,7 @@ public class SacTraceData {
         return header.getMag();
     }
 
-    public double getStla() {
+    public Double getStla() {
         return header.getStla();
     }
 
@@ -912,7 +912,7 @@ public class SacTraceData {
         if (!header.isEvenlySampled()) {
             throw new IllegalStateException("ERROR 1306: Illegal operation on unevenly spaced file");
         }
-        Complex[] result = SeriesMath.fft(yValues);
+        Complex[] result = Miscellaneous.fft(yValues);
 
         int nfreqs = result.length;
         double dt = header.getDelta();
@@ -937,7 +937,7 @@ public class SacTraceData {
             Complex[] spectralData = this.spectralData.getFrequencyDomainData();
             try {
                 double u = header.getSdelta();
-                Complex[] tmp = SeriesMath.ifft(spectralData);
+                Complex[] tmp = Miscellaneous.ifft(spectralData);
                 float[] v = new float[this.spectralData.getOriginalNsamps()];
                 for (int j = 0; j < v.length; ++j) {
                     v[j] = (float) tmp[j].divide(u).getReal();

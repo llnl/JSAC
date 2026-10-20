@@ -87,16 +87,4 @@ public class MacroSacCommand implements SacCommand {
         String[] names = { "M", "MACRO" };
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Executes a SAC macro file and the startup/init commands when invoking SAC.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	MACRO name {arguments}\n"
-                + "INPUT\n"
-                + "	name:	The name of the SAC macro to execute.\n"
-                + "	arguments:	The arguments (if any) of the macro.";
-    }
 }

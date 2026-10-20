@@ -20,26 +20,31 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac;
 
+import java.awt.HeadlessException;
 import java.util.ServiceLoader;
 
 import javax.swing.SwingUtilities;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
 import gov.llnl.gnem.jsac.commands.SacCommandParser;
 import gov.llnl.gnem.jsac.plots.plot.PlotFrame;
-import llnl.gnem.dftt.core.gui.util.ExceptionDialog;
-import llnl.gnem.dftt.core.util.FileUtil.DriveMapper;
+import llnl.gnem.core.util.ExceptionDialog;
+import llnl.gnem.core.util.FileUtil.DriveMapper;
+import org.apache.commons.cli.HelpFormatter;
+import java.io.InputStream;
+
+import java.util.Properties;
+import java.util.logging.Level;
+import llnl.gnem.core.util.ApplicationLogger;
 
 /**
  *
@@ -49,19 +54,29 @@ public class MainClass {
 
     private static final Logger log = LoggerFactory.getLogger(MainClass.class);
 
-    private static ServiceLoader<CommandParser> additionalParsers = ServiceLoader.load(CommandParser.class);
- static {
-      System.setProperty("org.apache.commons.logging.Log",
-                         "org.apache.commons.logging.impl.NoOpLog");
-   }
+    private static final ServiceLoader<CommandParser> additionalParsers = ServiceLoader.load(CommandParser.class);
+
+    private static Interpreter interpreter;
+
+    static {
+        System.setProperty("org.apache.commons.logging.Log",
+                "org.apache.commons.logging.impl.NoOpLog");
+    }
+
     public static void main(String[] args) {
+
+        displayVersionAndDate();
         getCommandLineInfo(args);
         DriveMapper.setupWindowsNFSDriveMap();
 
         SwingUtilities.invokeLater(() -> {
             try {
                 PlotFrame.getInstance().setVisible(false);
-            } catch (Exception e) {
+            }
+            catch (ExceptionInInitializerError | HeadlessException he) {
+                log.trace("Headless environment detected.");
+            }
+            catch (Exception e) {
                 ExceptionDialog.displayError(e);
             }
         });
@@ -71,17 +86,38 @@ public class MainClass {
             log.error(ex.getLocalizedMessage(), ex);
             System.exit(1);
         }
-        Runnable runnable = new Interpreter();
-
-        Thread thread = new Thread(runnable);
+        interpreter = new Interpreter();
+        Thread thread = new Thread(interpreter);
         thread.start();
+
+    }
+
+    public static void displayVersionAndDate() {
+        Properties prop = new Properties();
+        try (InputStream input = MainClass.class.getClassLoader().getResourceAsStream("build.properties")) {
+            if (input == null) {
+                System.out.println("Unable to find build.properties");
+            }
+            prop.load(input);
+            System.out.println("Version: " + prop.getProperty("build.version"));
+            System.out.println("Build Date: " + prop.getProperty("build.date"));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private static void printUsage(Options options) {
+        String usage = getUsageString();
+        String footer = "";
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(usage, "", options, footer, false);
 
     }
 
     private static void getCommandLineInfo(String[] args) {
         Options options = new Options();
 
-        Option help = new Option("h", "help", false, "Eventually show general help message...");
+        Option help = new Option("h", "help", false, "Show general help message...");
         Option logLevelOption = new Option("L", "LogLevel", true, "The logging level to use.");
 
         DefaultParser baseParser = new DefaultParser();
@@ -89,20 +125,33 @@ public class MainClass {
         options.addOption(logLevelOption);
         try {
             CommandLine cmd = baseParser.parse(options, args);
-
+            if (cmd.hasOption(help.getOpt())) {
+                printUsage(options);
+                System.exit(0);
+            }
             if (cmd.hasOption(logLevelOption.getOpt())) {
                 String level = cmd.getOptionValue(logLevelOption.getOpt());
-                LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-                ch.qos.logback.classic.Logger logger = context.getLogger(Logger.ROOT_LOGGER_NAME);
-                if (logger != null) {
-                    logger.setLevel(Level.toLevel(level));
-                }
+                Level logLevel = Level.parse(level.toUpperCase());
+                 
+                ApplicationLogger.getInstance().setLevel(logLevel);
             }
             additionalParsers.forEach(f -> f.apply(options, args));
         } catch (Exception ex) {
             log.error(ex.getLocalizedMessage(), ex);
             System.exit(2);
         }
+    }
+
+    private static String getUsageString() {
+        if (additionalParsers.iterator().hasNext()) {
+            return additionalParsers.iterator().next().getHelpText();
+        } else {
+            return "jsac [options]";
+        }
+    }
+
+    public static Interpreter getInterpreter() {
+        return interpreter;
     }
 
 }

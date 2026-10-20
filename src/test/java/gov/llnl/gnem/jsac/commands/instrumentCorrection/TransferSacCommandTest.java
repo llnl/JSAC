@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 import gov.llnl.gnem.jsac.SacDataModel;
 import gov.llnl.gnem.jsac.TestUtil;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
-import llnl.gnem.dftt.core.util.SeriesMath;
+import llnl.gnem.core.util.SeriesMath;
 
 /**
  *

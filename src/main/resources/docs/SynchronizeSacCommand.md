@@ -1,0 +1,83 @@
+## SYNCHRONIZE
+
+**SUMMARY**
+
+    Synchronizes the reference times of all files in memory.
+****
+**SYNTAX**
+
+    SYNCHRONIZE {ROUND {ON|OFF}} {BEGIN {ON|OFF}}
+
+****
+**INPUT**
+
+    ROUND {ON}:	Turn begin time rounding on. When this opotion is on, the begin 
+                times for each file are rounded to the nearest multiple of the sampling interval.
+    ROUND OFF:	Turn begin time rounding off.
+    BEGIN {ON}:	Sets begin time of each file to zero.
+    BEGIN OFF:	Maintains the GMT values of the reference times.
+****
+**DEFAULT VALUES**
+
+    SYNCHRONIZE ROUND OFF BEGIN OFF
+****
+**DESCRIPTION**
+
+    This command synchronizes the references times for all files in memory. 
+    It determines the latest starting time of all files by examining their reference 
+    times and beginning offset times. This latest starting time then becomes the 
+    reference time for ALL of the files in memory. New values for all of the 
+    offset times (B, E, A, Tn, etc.) for each of the files are then calculated.
+
+    This command is useful when a set of files have different reference times 
+    and you want to use the CUT or XLIM command to analyze or plot portions of them. 
+    Once they have been synchronized to the same reference time, the cuts will then 
+    refer to the exact same GMT time window. If the BEGIN option is used, GMT values 
+    of reference times are not preserved. The BEGIN option sets the kztime of all 
+    files the same, it sets the kzdate of all files the same, and it sets the begin 
+    time of all files to zero. Other reference points retain their relation to the 
+    begin time of the file.
+****
+
+**EXAMPLES**
+
+Assume you read two files into memory with different reference times:
+
+SAC> READ FILE1 FILE2
+SAC> LISTHDR B KZTIME KZDATE
+
+    FILE: FILE1
+    -----------
+           B = 0.
+      KZTIME = 10:38:14.000
+      KZDATE = MAR 29 (088), 1981
+
+    FILE: FILE2
+    -----------
+           B = 10.00
+      KZTIME = 10:40:10.000
+      KZDATE = MAR 29 (088), 1981
+The files have the same reference date but different reference times and different 
+beginning offsets. Now if you execute the SYNCHRONIZE command followed by another LISTHDR you would find:
+
+SAC> SYNCHRONIZE
+SAC> LISTHDR
+
+    FILE: FILE1
+    -----------
+           B = -126.00
+      KZTIME = 10:40:20.000
+      KZDATE = MAR 29 (088), 1981
+
+    FILE: FILE2
+    -----------
+           B = 0.
+      KZTIME = 10:40:20.000
+      KZDATE = MAR 29 (088), 1981
+Now the files in memory have the same reference time which is the beginning of the 
+later file. If there had been any defined time markers in these headers, their 
+values would be adjusted so that they point to the same time as before.
+****
+**HEADER CHANGES**
+
+NZYEAR, NZJDAY, NZHOUR, NZMIN, NZSEC, NZMSEC, B, E, A, O, Tn.  

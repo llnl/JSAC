@@ -28,8 +28,8 @@ import java.util.Map;
 import com.isti.jevalresp.ChannelMatchPolicy;
 
 import gov.llnl.gnem.response.TransferData;
-import llnl.gnem.dftt.core.util.StreamKey;
-import llnl.gnem.dftt.core.waveform.seismogram.CssSeismogram;
+import llnl.gnem.core.util.StreamKey;
+import llnl.gnem.core.waveform.seismogram.CssSeismogram;
 
 public interface DatabaseTransferService {
     public TransferData getFromTransfer(ResponseOptions responseOptions, StreamKey key, CssSeismogram s, ChannelMatchPolicy policy, Map<StreamKey, File> keyFileMap);

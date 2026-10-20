@@ -80,11 +80,6 @@ public class ListFontsSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n" + "	Lists available fonts on this system.\n" + "\n" + "SYNTAX\n" + "	FONTS | LISTFONTS | LF\n" + "INPUT\n" + "	none.\n" + "DEFAULT VALUES\n" + "	none";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = { "FONTS", "LISTFONTS", "LF" };
         return new ArrayList<>(Arrays.asList(names));

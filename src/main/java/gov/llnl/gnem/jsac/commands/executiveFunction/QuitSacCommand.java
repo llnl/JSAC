@@ -49,10 +49,4 @@ public class QuitSacCommand implements SacCommand {
         String[] names = {"Q", "QUIT","END","DONE","EXIT"};
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Exit the program.";
-    }
 }

@@ -74,17 +74,4 @@ public class SmoothSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Applies an arithmetic smoothing algorithm to the data.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	SMOOTH {HALFWIDTH n}\n"
-                + "INPUT\n"
-                + "	HALFWIDTH n:	Set halfwidth of smoothing window to n. \n"
-                + "	The moving window will contain n points on each side of the point being smoothed.\n"
-                + "DEFAULT VALUES\n"
-                + "	SMOOTH HALFWIDTH 1";
-    }
 }

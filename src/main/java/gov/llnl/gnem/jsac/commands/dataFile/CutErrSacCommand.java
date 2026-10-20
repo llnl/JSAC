@@ -37,7 +37,6 @@ import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData.CutErrorAction;
  */
 public class CutErrSacCommand implements SacCommand {
 
-    
     private static CutErrorAction errorAction = CutErrorAction.FILLZ;
     private final List<String> mytokens;
 
@@ -72,22 +71,8 @@ public class CutErrSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Controls errors due to bad cut parameters.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	CUTERR FATAL|USEBE|FILLZ\n"
-                + "INPUT\n"
-                + "	FATAL:	Treat cut errors as fatal.\n"
-                + "	USEBE:	Replace bad start cut with file begin and bad stop cut with file end.\n"
-                + "	FILLZ:	Fill with zeros before file begin or after file end to account for \n"
-                + "			difference between bad cut and file begin and end.";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
-        String[] names = {"CUTERR"};
+        String[] names = { "CUTERR" };
         return new ArrayList<>(Arrays.asList(names));
     }
 

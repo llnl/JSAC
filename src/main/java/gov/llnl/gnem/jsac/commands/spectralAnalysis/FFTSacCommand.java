@@ -95,20 +95,4 @@ public class FFTSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Performs a discrete Fourier transform.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	FFT {WOMEAN|WMEAN},{RLIM|AMPH}\n"
-                + "INPUT\n"
-                + "	WOMEAN:	Remove mean before transform.\n"
-                + "	WMEAN:	Leave mean in transform.\n"
-                + "	RLIM:	Output should be in real-imaginary format.\n"
-                + "	AMPH:	Output should be in amplitude-phase format.\n"
-                + "\n"
-                + "DEFAULT VALUES\n"
-                + "	FFT WMEAN AMPH";
-    }
 }

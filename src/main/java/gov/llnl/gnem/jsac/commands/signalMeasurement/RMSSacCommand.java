@@ -152,35 +152,6 @@ public class RMSSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Computes the root mean square of the data within the measurement time window.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	RMS {NOISE ON|OFF|pdw},{TO USERn}\n"
-                + "INPUT\n"
-                + "	NOISE ON:	Turn noise normalization option on.\n"
-                + "	NOISE OFF:	Turn noise normalization option off.\n"
-                + "	NOISE pdw:	Turn noise normalization option on and change noise 'partial data window.' A pdw consists of a starting and a stopping value of the independent variable, usually time, which defines the desired window of data that you wish to make measurements on. See the CUT command for a complete explanation of how to define and use a pdw. Some examples are given below.\n"
-                + "	TO USERn:	Define the user header variable in which to store the result. n is an integer in the range 0 to 9.\n"
-                + "DEFAULT VALUES\n"
-                + "	RMS NOISE OFF TO USER0\n"
-                + "DESCRIPTION\n"
-                + "	This command computes the root mean square of the data within the current measurement time window (see MTW.) The result is written into one of the floating point user header variables. The result may be corrected for noise if desired by defining a noise window. The general form of the calculation is: where the first summation is over the signal window and the second is over the optional noise window.\n"
-                + "EXAMPLES\n"
-                + "	To compute the uncorrected root mean square of data between the two header fields, T1 and T2, and to store the result into the USER4 header field:\n"
-                + "\n"
-                + "		SAC> MTW T1 T2\n"
-                + "		SAC> RMS TO USER4\n"
-                + "	To compute the corrected root mean square using a noise window 5 seconds long ending at the header field T3:\n"
-                + "\n"
-                + "		SAC> MTW T1 T2\n"
-                + "		SAC> RMS NOISE T3 -5.0 0.0\n"
-                + "HEADER CHANGES\n"
-                + "	USERn";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = { "RMS" };
         return new ArrayList<>(Arrays.asList(names));

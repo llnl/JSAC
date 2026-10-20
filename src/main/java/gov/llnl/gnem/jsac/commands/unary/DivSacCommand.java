@@ -70,18 +70,4 @@ public class DivSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Divides each data point by a constant.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	MUL {v1 {v2 ... vn} }\n"
-                + "INPUT\n"
-                + "	v1:	Constant to divide first file by.\n"
-                + "	v2:	Constant to divide second file by.\n"
-                + "	vn:	Constant to divide nth file by.\n"
-                + "DEFAULT VALUES\n"
-                + "	DIV 1.";
-    }
 }

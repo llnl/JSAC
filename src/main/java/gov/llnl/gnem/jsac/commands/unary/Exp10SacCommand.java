@@ -53,13 +53,4 @@ public class Exp10SacCommand implements SacCommand {
         String[] names = {"EXP10"};
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Computes the base 10 exponential (10.**y) of each data point.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	EXP10";
-    }
 }

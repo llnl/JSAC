@@ -20,7 +20,6 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.commands.dataFile;
 
 import java.nio.file.Path;
@@ -39,8 +38,9 @@ import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.io.css.CssProcessor;
+import gov.llnl.gnem.jsac.util.FileFinder;
 import gov.llnl.gnem.jsac.util.PathManager;
-import llnl.gnem.dftt.core.waveform.io.css.PathType;
+import llnl.gnem.core.waveform.io.css.PathType;
 
 /**
  *
@@ -65,7 +65,7 @@ public class ReadCSSSacCommand implements SacCommand {
     @Override
     public void initialize(String[] tokens) {
         more = false;
-        Map<String, List<Object>> parsedTokens = TokenListParser.parseTokens(descriptors, tokens, true);
+        Map<String, List<Object>> parsedTokens = TokenListParser.parseTokens(descriptors, tokens);
         if (parsedTokens.isEmpty()) {
             return;
         }
@@ -92,31 +92,23 @@ public class ReadCSSSacCommand implements SacCommand {
             System.out.println("You must specify at least a WFDISC filename!");
             return;
         }
-        Path path = PathManager.getInstance().resolveAndValidateFile(wfdiscFile);
-        try {
-            long start = System.currentTimeMillis();
-            List<SacTraceData> data = CssProcessor.readCSS(path.toString(), PathType.FilePathPlusRel);
-            if (!more) {
-                SacDataModel.getInstance().clear();
-            }
-            long end = System.currentTimeMillis();
-            double elapsed = (end - start) / 1000.0;
-            SacDataModel.getInstance().addAll(data, elapsed);
-        } catch (Exception ex) {
-            Logger.getLogger(ReadCSSSacCommand.class.getName()).log(Level.SEVERE, null, ex);
+        if (!more) {
+            SacDataModel.getInstance().clear();
         }
-    }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Changes the values of selected header fields.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	READCSS {RCSS} {MORE}  WFDISCFILE {WFILE}  wfdisc filename\n"
-                + "INPUT\n"
-                + "	MORE:	\n"
-                + "		Place the new data files in memory AFTER the old ones. If this option is omitted, the new data files REPLACE the old ones.\n";
+        List<Path> paths = new FileFinder(PathManager.getInstance().getCurrentDir(), wfdiscFile).findMatches();   //.findMatchingFiles(PathManager.getInstance().getCurrentDir().toString(),filename);
+
+        for (Path path : paths) {
+            try {
+                long start = System.currentTimeMillis();
+                List<SacTraceData> data = CssProcessor.readCSS(path.toString(), PathType.FilePathPlusRel);
+                long end = System.currentTimeMillis();
+                double elapsed = (end - start) / 1000.0;
+                SacDataModel.getInstance().addAll(data, elapsed);
+            } catch (Exception ex) {
+                Logger.getLogger(ReadCSSSacCommand.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     @Override

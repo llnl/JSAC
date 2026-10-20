@@ -34,11 +34,14 @@ import org.slf4j.LoggerFactory;
 
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.io.Waveform;
-import llnl.gnem.dftt.core.util.FileUtil.DriveMapper;
-import llnl.gnem.dftt.core.waveform.Wfdisc;
-import llnl.gnem.dftt.core.waveform.io.css.PathType;
-import llnl.gnem.dftt.core.waveform.io.css.WfdiscReader;
-import llnl.gnem.dftt.core.waveform.merge.NamedIntWaveform;
+import llnl.gnem.core.util.FileUtil.DriveMapper;
+
+import llnl.gnem.core.waveform.Wfdisc;
+import llnl.gnem.core.waveform.io.BinaryData;
+import llnl.gnem.core.waveform.io.css.PathType;
+import llnl.gnem.core.waveform.io.css.WfdiscReader;
+import llnl.gnem.core.waveform.seismogram.CssSeismogram;
+
 
 /**
  *
@@ -50,7 +53,6 @@ public class CssProcessor {
 
     public static List<SacTraceData> readCSS(String filename, PathType wfdiscPathType) throws Exception {
         Path parent = Paths.get(filename).getParent();
-        String userPath = null;
         List<Wfdisc> wfdiscs = WfdiscReader.readSpaceDelimitedWfdiscFile(filename);
 
         return wfdiscs.parallelStream().map(t -> toSacTraceData(t, parent)).filter(Objects::nonNull).collect(Collectors.toList());
@@ -59,21 +61,16 @@ public class CssProcessor {
     private static SacTraceData toSacTraceData(Wfdisc row, Path parent) {
         try {
             String dir = DriveMapper.getInstance().maybeMapPath(row.getDir());
+            Path path = Paths.get(dir);
+            if (!path.isAbsolute()) {
+                File afile = new File(parent.toString(), dir);
+                dir = afile.getAbsolutePath();
+            }
             String dfile = row.getDfile();
             File file = new File(dir, dfile);
-            int[] data = Waveform.getSeismogramDataAsIntArray(file.getAbsolutePath(), row.getFoff(), row.getNsamp(), row.getDatatype());
-            NamedIntWaveform niw = new NamedIntWaveform(-1,
-                                                        row.getSta(),
-                                                        row.getChan(),
-                                                        row.getTime(),
-                                                        row.getSamprate(),
-                                                        data,
-                                                        row.getCalib(),
-                                                        row.getCalper(),
-                                                        row.getClip(),
-                                                        row.getSegtype(),
-                                                        row.getInstype());
-            return new SacTraceData(niw, parent);
+            BinaryData data = Waveform.getSeismogramData(file.getAbsolutePath(), row.getFoff(), row.getNsamp(), row.getDatatype());
+            CssSeismogram seis = new CssSeismogram(row, data);
+            return new SacTraceData(seis, parent);
         } catch (Exception ex) {
             log.warn("Failed reading " + row.getDir() + "/" + row.getDfile() + "!", ex);
             return null;

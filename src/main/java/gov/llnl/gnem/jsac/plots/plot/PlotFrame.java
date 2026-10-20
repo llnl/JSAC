@@ -28,7 +28,7 @@ import java.awt.BorderLayout;
 import javax.swing.JFrame;
 
 import gov.llnl.gnem.jsac.plots.PlotPanelTab;
-import llnl.gnem.dftt.core.gui.util.PersistentPositionContainer;
+import llnl.gnem.core.gui.util.PersistentPositionContainer;
 
 /**
  *
@@ -40,7 +40,7 @@ public class PlotFrame extends PersistentPositionContainer {
 
     private PlotFrame(String preferencePath, String title, int width, int height) {
         super(preferencePath, title, width, height);
-        plotPanelTab = new PlotPanelTab(this, PlotPanel.getInstance());
+        plotPanelTab = new PlotPanelTab(this, PlotPanel.getInstance(),true);
         getContentPane().add(plotPanelTab, BorderLayout.CENTER);
         setDefaultCloseOperation(JFrame.ICONIFIED);
     }
@@ -52,9 +52,8 @@ public class PlotFrame extends PersistentPositionContainer {
     public static PlotFrame getInstance() {
         return PlotFrameHolder.INSTANCE;
     }
-
+    
     private static class PlotFrameHolder {
-
         private static final PlotFrame INSTANCE = new PlotFrame("gov/llnl/gnem/jsac/plot", "plot", 600, 600);
     }
 }

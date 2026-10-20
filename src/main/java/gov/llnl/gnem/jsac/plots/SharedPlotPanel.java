@@ -22,12 +22,10 @@
  */
 package gov.llnl.gnem.jsac.plots;
 
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPreferenceModel;
 
-/**
- *
- * @author dodge1
- */
+
 public class SharedPlotPanel extends JMultiAxisPlot {
 
     private static final long serialVersionUID = 1L;
@@ -35,6 +33,7 @@ public class SharedPlotPanel extends JMultiAxisPlot {
     public SharedPlotPanel(JMultiAxisPlot.XAxisType type) {
         super(type);
         this.setAllowPlotHighlighting(false);
+        PlotPreferenceModel.getInstance().registerPlot(this);
     }
 
     public void magnifyTraces() {

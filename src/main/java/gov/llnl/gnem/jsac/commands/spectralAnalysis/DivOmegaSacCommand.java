@@ -55,12 +55,4 @@ public class DivOmegaSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "   Performs integration in the frequency domain.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "   DIVOMEGA";
-    }
 }

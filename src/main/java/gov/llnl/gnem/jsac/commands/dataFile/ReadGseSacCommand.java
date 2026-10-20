@@ -128,24 +128,6 @@ public class ReadGseSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Read data files in GSE 2.0 format from disk into memory.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	READGSE {MORE} {DIR name} filelist\n"
-                + "INPUT\n"
-                + "	MORE:	\n"
-                + "		See the READ command.\n"
-                + "\n"
-                + "DIR name:	\n"
-                + "	The directory to be searched for gsefile(s).\n"
-                + "\n"
-                + "filelist:	\n"
-                + "	The name(s) of one or more gse files.";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = { "RGSE", "READGSE" };
         return new ArrayList<>(Arrays.asList(names));

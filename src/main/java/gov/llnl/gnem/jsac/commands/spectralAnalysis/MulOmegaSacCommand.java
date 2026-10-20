@@ -54,13 +54,4 @@ public class MulOmegaSacCommand implements SacCommand {
         String[] names = {"MULOMEGA"};
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "   Performs differentiation in the frequency domain.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "   MULOMEGA";
-    }
 }

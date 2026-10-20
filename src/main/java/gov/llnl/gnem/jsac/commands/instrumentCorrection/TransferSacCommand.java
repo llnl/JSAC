@@ -20,7 +20,6 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.commands.instrumentCorrection;
 
 import java.io.FileNotFoundException;
@@ -35,20 +34,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.isti.jevalresp.ChannelMatchPolicy.Policy;
+import gov.llnl.gnem.jsac.SacDataModel;
 
 import gov.llnl.gnem.jsac.commands.AttributeDescriptor;
 import gov.llnl.gnem.jsac.commands.Misc;
 import gov.llnl.gnem.jsac.commands.SacCommand;
 import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
+import gov.llnl.gnem.jsac.dataAccess.ExternalWaveformServiceProvider;
 import gov.llnl.gnem.jsac.transfer.ResponseOptions;
-import gov.llnl.gnem.jsac.transfer.ResponseType;
+import gov.llnl.gnem.jsac.transfer.SacResponseType;
 import gov.llnl.gnem.jsac.transfer.TransferProcessor;
 import gov.llnl.gnem.jsac.transfer.TransferSubOptionParser;
 import gov.llnl.gnem.jsac.util.PathManager;
 import gov.llnl.gnem.response.ChannelMatchPolicyHolder;
 import gov.llnl.gnem.response.FreqLimits;
-import llnl.gnem.dftt.core.util.StreamKey;
+import gov.llnl.gnem.response.ResponseType;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.nio.file.Paths;
+import llnl.gnem.core.util.StreamKey;
 
 /**
  *
@@ -59,8 +67,8 @@ public class TransferSacCommand implements SacCommand {
     private static final Logger log = LoggerFactory.getLogger(TransferSacCommand.class);
 
     private static FreqLimits freqLimits = null;
-    private static ResponseType fromType = ResponseType.NONE;
-    private static ResponseType toType = ResponseType.NONE;
+    private static SacResponseType fromType = SacResponseType.NONE;
+    private static SacResponseType toType = SacResponseType.NONE;
     private Policy policy = Policy.AGENCY_NET_STA_CHAN_LOCID_EPOCH_MATCH;
     private ResponseOptions fromResponseOptions = null;
     private ResponseOptions toResponseOptions = null;
@@ -68,16 +76,19 @@ public class TransferSacCommand implements SacCommand {
     private Path toResponseFilePath = null;
     private StreamKey substituteKey = null;
     private Double substituteTime = null;
+    private boolean listServices = false;
 
     public static void resetDefaults() {
         freqLimits = null;
-        fromType = ResponseType.NONE;
-        toType = ResponseType.NONE;
+        fromType = SacResponseType.NONE;
+        toType = SacResponseType.NONE;
     }
 
     private static final List<AttributeDescriptor> descriptors = new ArrayList<>();
 
     static {
+        descriptors.add(new AttributeDescriptor("SERVICE_NAME", ValuePossibilities.ONE_VALUE, String.class));
+        descriptors.add(new AttributeDescriptor("LIST_SERVICES", ValuePossibilities.NO_VALUE, null));
         descriptors.add(new AttributeDescriptor("FROM", ValuePossibilities.ONE_OR_MORE, String.class));
         descriptors.add(new AttributeDescriptor("TO", ValuePossibilities.ONE_OR_MORE, String.class));
         descriptors.add(new AttributeDescriptor("FREQLIMITS", ValuePossibilities.FOUR_VALUES, Double.class));
@@ -106,38 +117,51 @@ public class TransferSacCommand implements SacCommand {
         substituteKey = maybeGetSubstituteKey(parsedTokens);
         substituteTime = maybeGetSubstituteTime(parsedTokens);
         freqLimits = TransferSubOptionParser.maybeGetFreqLimits(parsedTokens);
+        listServices = false;
+        List<Object> tmpList = parsedTokens.remove("LIST_SERVICES");
+        if (tmpList != null) {
+            listServices = true;
+            return;
+        }
+
         List<Object> values = parsedTokens.get("TO");
         if (values != null && values.size() >= 1) {
             try {
                 String tmp = (String) values.get(0);
-                toType = ResponseType.valueOf(tmp.toUpperCase());
+                toType = SacResponseType.valueOf(tmp.toUpperCase());
                 if (toType != null) {
                     switch (toType) {
-                    case POLEZERO:
-                        try {
-                            toResponseOptions = TransferSubOptionParser.getToOptions(values);
-                        } catch (IllegalStateException e) {
-                            System.out.println(e.getMessage());
-                            throw (e);
+                        case POLEZERO:
+                            try {
+                                toResponseOptions = TransferSubOptionParser.getToOptions(values);
+                            } catch (IllegalStateException e) {
+                                System.out.println(e.getMessage());
+                                throw (e);
+                            }
+                            break;
+                        case CSS:
+                            if (values.size() > 1) {
+                                String tmpFileName = (String) values.get(1);
+                                toResponseFilePath = PathManager.getInstance().resolveAndValidateFile(tmpFileName);
+                            } else {
+                                System.out.println("Option CSS must be followed by a file name!");
+                                throw new IllegalStateException("File name was not specified!");
+                            }
+                            break;
+                        case EVALRESP:
+                            try {
+                                toResponseOptions = TransferSubOptionParser.getToOptions(values);
+                            } catch (IllegalStateException e) {
+                                System.out.println(e.getMessage());
+                                throw (e);
+                            }
+                            break;
+                        case WA_NEW:
+                        case WA_OLD: {
+                            toResponseOptions = getBuiltInPZfilename(toType.toString());
+                            toType = SacResponseType.POLEZERO;
+                            break;
                         }
-                        break;
-                    case CSS:
-                        if (values.size() > 1) {
-                            String tmpFileName = (String) values.get(1);
-                            toResponseFilePath = PathManager.getInstance().resolveAndValidateFile(tmpFileName);
-                        } else {
-                            System.out.println("Option CSS must be followed by a file name!");
-                            throw new IllegalStateException("File name was not specified!");
-                        }
-                        break;
-                    case EVALRESP:
-                        try {
-                            fromResponseOptions = TransferSubOptionParser.getToOptions(values);
-                        } catch (IllegalStateException e) {
-                            System.out.println(e.getMessage());
-                            throw (e);
-                        }
-                        break;
                     }
                 }
             } catch (IllegalStateException ex) {
@@ -148,48 +172,76 @@ public class TransferSacCommand implements SacCommand {
         if (values != null && values.size() >= 1) {
             try {
                 String tmp = (String) values.get(0);
-                fromType = ResponseType.valueOf(tmp.toUpperCase());
+                fromType = SacResponseType.valueOf(tmp.toUpperCase());
                 if (null != fromType) {
                     switch (fromType) {
-                    case POLEZERO:
-                        try {
-                            fromResponseOptions = TransferSubOptionParser.getOptions(values);
-                        } catch (IllegalStateException e) {
-                            System.out.println(e.getMessage());
-                            throw (e);
+                        case POLEZERO:
+                            try {
+                                fromResponseOptions = TransferSubOptionParser.getOptions(values);
+                            } catch (IllegalStateException e) {
+                                System.out.println(e.getMessage());
+                                throw (e);
+                            }
+                            break;
+                        case CSS:
+                            if (values.size() > 1) {
+                                String tmpFileName = (String) values.get(1);
+                                fromResponseFilePath = PathManager.getInstance().resolveAndValidateFile(tmpFileName);
+                            } else {
+                                System.out.println("Option CSS must be followed by a file name!");
+                                throw new IllegalStateException("File name was not specified!");
+                            }
+                            break;
+                        case EVALRESP:
+                            try {
+                                fromResponseOptions = TransferSubOptionParser.getOptions(values);
+                            } catch (IllegalStateException e) {
+                                System.out.println(e.getMessage());
+                                throw (e);
+                            }
+                            break;
+                        case DATA_SERVICE: {
+                            break;
                         }
-                        break;
-                    case CSS:
-                        if (values.size() > 1) {
-                            String tmpFileName = (String) values.get(1);
-                            fromResponseFilePath = PathManager.getInstance().resolveAndValidateFile(tmpFileName);
-                        } else {
-                            System.out.println("Option CSS must be followed by a file name!");
-                            throw new IllegalStateException("File name was not specified!");
+                        case WA_NEW:
+                        case WA_OLD: {
+                            fromResponseOptions = getBuiltInPZfilename(fromType.toString());
+                            fromType = SacResponseType.POLEZERO;
+                            break;
                         }
-                        break;
-                    case EVALRESP:
-                        try {
-                            fromResponseOptions = TransferSubOptionParser.getOptions(values);
-                        } catch (IllegalStateException e) {
-                            System.out.println(e.getMessage());
-                            throw (e);
-                        }
-                        break;
-                    default:
-                        break;
+
+                        default:
+                            break;
                     }
                 } else {
-                    fromType = ResponseType.NONE;
+                    fromType = SacResponseType.NONE;
                 }
             } catch (IllegalStateException ex) {
                 throw ex;
             }
         }
+        List<Object> serviceName = parsedTokens.remove("SERVICE_NAME");
+        if (serviceName != null && serviceName.size() == 1) {
+            for (Object obj : serviceName) {
+                String service = (String) obj;
+                ExternalWaveformServiceProvider.getInstance().setCurrentService(service.toUpperCase());
+            }
+        }
+
     }
 
     @Override
     public void execute() {
+        if (listServices) {
+            for (String string : ExternalWaveformServiceProvider.getInstance().getServiceDescriptions()) {
+                System.out.println(string);
+            }
+            return;
+        }
+        if (SacDataModel.getInstance().isEmpty()) {
+            log.warn("Cannot execute the transfer command because no data are in memory!");
+            return;
+        }
         ChannelMatchPolicyHolder.getInstance().setPolicy(policy);
         try {
             TransferProcessor.getInstance().transfer(fromType, toType, freqLimits, fromResponseOptions, fromResponseFilePath, toResponseOptions, toResponseFilePath, substituteKey, substituteTime);
@@ -200,91 +252,8 @@ public class TransferSacCommand implements SacCommand {
 
     @Override
     public Collection<String> getCommandNames() {
-        String[] names = { "TRANS", "TRANSFER" };
+        String[] names = {"TRANS", "TRANSFER"};
         return new ArrayList<>(Arrays.asList(names));
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Performs deconvolution to remove an instrument response and \n"
-                + "	convolution to apply another instrument response.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "\n"
-                + "	[TRANS]FER {FROM type {options}} , {TO type {options}} ,\n"
-                + "      {FREQlimits f1 f2 f3 f4} \n"
-                + "INPUT\n"
-                + "\n"
-                + "FROM type:	\n"
-                + "	Available types are: EVALRESP, POLEZERO, CSS, DBASE\n"
-                + "		Type options are:\n"
-                + "			Network (Net) Use this network code in finding appropriate transfer function				\n"
-                + "			Station (Sta) Use this station code in finding appropriate transfer function				\n"
-                + "			Channel (chan) Use this channel code in finding appropriate transfer function				\n"
-                + "			Locid Use this location code (KHOLE) in finding appropriate transfer function				\n"
-                + "\n"
-                + "			TIME      	substitute reference Time specified as epoch time\n"
-                + "			HTIME     	substitute reference Time specified as one of (YYYYDDD, YYYY/MM/DD, YYYY/DDD:HH:MM:SS, YYYY/MM/DD:HH:MM:SS)\n"
-                + "			The CSS option requires the name of the response file to be specified immediately after the CSS keyword.\n"
-                + "			The POLEZERO and EVALRESP options have a sub-option (SUBTYPE {S}) which should be followed by the name of the  file to use.\n"
-                + "			If the SUBTYPE sub-option is not used the RESPONSE directory will be searched for files matching pattern \"SAC_PZs_NET_STA_CHAN_LOCID_*\" or \"RESP.<NET>.<STA>.<LOCID>.<CHAN>\";\n"
-                + "			The RESPONSE is either the current directory or a directory specified using the DIR sub-option.\n"
-                + "TO type:	\n"
-                + "	Insert the instrument type by convolution using spectral multiplication.\n"
-                + "\n"
-                + "FREQLIMITS:	\n"
-                + "	Default is it is not used.  \n"
-                + "\n"
-                + "POLICY:	\n"
-                + "	Controls the specificity of the query for response metadata. Allowable values are:\n"
-                + "		AGENCY_NET_STA_CHAN_LOCID_TIME (ANSCLT)\n"
-                + "		NET_STA_CHAN_LOCID_TIME (NSCLT)\n"
-                + "		STA_CHAN_TIME (SCT)\n"
-                + "\n"
-                + "EXAMPLES\n"
-                + "	POLEZERO:\n"
-                + "		Name the polezero file using the SUBTYPE (S) option:\n"
-                + "			transfer from polezero subtype polezero-file.pz freqlimits 0.05 0.1 9 10\n"
-                + "			\n"
-                + "		search a named directory (sacpzf) for SAC Polezero files named like:SAC_PZs_NETWORK_STATION_CHANNEL_LOCID_*\n"
-                + "			transfer from polezero dir sacpzf to none\n"
-                + "			\n"
-                + "		search the current directory for SAC Polezero files named like:SAC_PZs_NETWORK_STATION_CHANNEL_LOCID_*\n"
-                + "		but override the net-sta-chan-locid values in the header(s)\n"
-                + "			transfer from polezero  network IU station YAK channel BHZ locid 00 freq .01 .05 8 9  to none\n"
-                + "	\n"
-                + "	EVALRESP:\n"
-                + "		Name the evalresp file using the SUBTYPE (S) option:\n"
-                + "			transfer from evalresp s 2013.148.00.YAK.BHZ.00.6733538.resp freq 0.01 .05 8 9  to none\n"
-                + "			\n"
-                + "		search a named directory (evresp) for EVALRESP files named like:RESP.<NET>.<STA>.<LOCID>.<CHAN>\n"
-                + "			transfer from evalresp dir evresp s RESP.IU.ANMO.00.BHZ freq .01 .05 8 9  to none\n"
-                + "			\n"
-                + "		search the current directory for evalresp files named like:RESP.<NET>.<STA>.<LOCID>.<CHAN>\n"
-                + "		but override the net-sta-chan-locid and the reftime values in the header(s)\n"
-                + "			transfer from evalresp network IU station ANMO channel BHZ locid 00    htime 2019001 freq .01 .05 8 9  to none\n"
-                + "\n"
-                + "	CSS: This option applies to response files from the USNDC such as (FAP,PAZ,PAZFIR)\n"
-                + "		Transfer from a named CSS response 			\n"
-                + "			transfer from css 1989.025.00.YKW2.be.--.1.resp  freq .01 .05 8 9\n"
-                + "\n"
-                + "		Transfer from a named CSS response to a named POLEZERO response\n"
-                + "			transfer from css cmg3t+q330_lb100c@1 to polezero subtype polezero-file.pz\n"
-                + "	DBASE: Looks up the correct response in the associated database table using metadata in the SAC header. \n"
-                + "		This option can only be used in the FROM direction and requires\n"
-                + "     a provider plugin installed and available for the DBASE processing type.\n"
-                + "			transfer from dbase freqlimits 0.05 0.1 9 10\n"
-                + "\n"
-                + "DEFAULT VALUES:	\n"
-                + "	TRANS FROM NONE TO NONE POLICY ANSCLT \n"
-                + "	\n"
-                + "DESCRIPTION\n"
-                + "\n"
-                + "	The default input and output \"instrument\" in TRANSFER is displacement, which in SAC is designated as NONE. \n"
-                + "	Hence, if a FROM type or a TO type is not specified, SAC assumes it to be NONE. If the output instrument is \n"
-                + "	NONE, IDEP in the SAC header is set to DISPLACEMENT (NM) - SAC's convention for displacement. If TRANSFER \n"
-                + "	uses TO VEL or TO ACC, the header variable IDEP is changed accordingly for all waveforms in memory.";
     }
 
     private StreamKey maybeGetSubstituteKey(Map<String, List<Object>> parsedTokens) {
@@ -329,19 +298,53 @@ public class TransferSacCommand implements SacCommand {
         String p = getStringValue(parsedTokens, "POLICY", "POLICY");
         if (p != null && !p.isEmpty()) {
             switch (p.toUpperCase()) {
-            case "NET_STA_CHAN_LOCID_TIME":
-            case "NSCLT":
-                return Policy.AGENCY_NET_STA_CHAN_LOCID_EPOCH_MATCH;
-            case "AGENCY_NET_STA_CHAN_LOCID_TIME":
-            case "ANSCLT":
-                return Policy.AGENCY_NET_STA_CHAN_LOCID_EPOCH_MATCH;
-            case "STA_CHAN_TIME":
-            case "SCT":
-                return Policy.STA_CHAN_EPOCH_MATCH;
+                case "NET_STA_CHAN_LOCID_TIME":
+                case "NSCLT":
+                    return Policy.AGENCY_NET_STA_CHAN_LOCID_EPOCH_MATCH;
+                case "AGENCY_NET_STA_CHAN_LOCID_TIME":
+                case "ANSCLT":
+                    return Policy.AGENCY_NET_STA_CHAN_LOCID_EPOCH_MATCH;
+                case "STA_CHAN_TIME":
+                case "SCT":
+                    return Policy.STA_CHAN_EPOCH_MATCH;
             }
         }
 
         return Policy.AGENCY_NET_STA_CHAN_LOCID_EPOCH_MATCH;
+    }
+
+    private ResponseOptions getBuiltInPZfilename(String respName) {
+        try {
+            String dir = System.getProperty("java.io.tmpdir");
+            String outfileName = respName + ".txt";
+            Path path = Paths.get(dir, outfileName);
+            List<String> lines = readPoleZeroFromResource(respName);
+            try (PrintWriter pw = new PrintWriter(path.toString())) {
+                for (String line : lines) {
+                    pw.println(line);
+                }
+            }
+            return new ResponseOptions(ResponseType.SACPZF, path.toString(), path.getParent());
+        } catch (IOException ex) {
+            System.getLogger(TransferSacCommand.class.getName()).log(System.Logger.Level.ERROR, (String) "Error retrieving response file.", ex);
+            return null;
+        }
+    }
+
+    public List<String> readPoleZeroFromResource(String respName) throws IOException {
+        ClassLoader classLoader = getClass().getClassLoader();
+        List<String> lines = new ArrayList<>();
+        try (InputStream in = classLoader.getResourceAsStream("gov/llnl/gnem/jsac/commands/instrumentCorrection/" + respName + ".txt")) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+                String line;
+
+                // readLine() returns null when the end of the file is reached
+                while ((line = reader.readLine()) != null) {
+                    lines.add(line);
+                }
+            }
+        }
+        return lines;
     }
 
 }

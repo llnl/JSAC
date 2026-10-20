@@ -26,13 +26,16 @@ package gov.llnl.gnem.jsac.plots;
 import java.util.ArrayList;
 import java.util.List;
 
-import llnl.gnem.dftt.core.gui.plotting.PenStyle;
+import llnl.gnem.core.gui.plotting.PenStyle;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPreferenceListener;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPreferenceModel;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPresentationPrefs;
 
 /**
  *
  * @author dodge1
  */
-public class PlotDrawingData {
+public class PlotDrawingData  implements PlotPreferenceListener{
 
     private boolean applyFloor;
     private double floorValue;
@@ -43,6 +46,7 @@ public class PlotDrawingData {
     private int currentPenStyleIndex = 0;
     private boolean incrementPenStyles = false;
     private final List<Integer> incrementList;
+    private final PlotPresentationPrefs prefs;
 
     private PlotDrawingData() {
 
@@ -50,6 +54,10 @@ public class PlotDrawingData {
         for (int j = 1; j < allPenStyles.length; ++j) {
             incrementList.add(allPenStyles[j].getIndex());
         }
+        prefs = PlotPreferenceModel.getInstance().getPrefs();
+        PlotPreferenceModel.getInstance().addListener(this);
+        updateFromPlotPreferenceModel();
+        
     }
 
     public static PlotDrawingData getInstance() {
@@ -92,6 +100,15 @@ public class PlotDrawingData {
             incrementPenStyles = false;
             penStyle = PenStyle.getPenStyleByIndex(v);
         }
+    }
+
+    @Override
+    public void preferencesChanged() {
+        updateFromPlotPreferenceModel();
+    }
+
+    private void updateFromPlotPreferenceModel() {
+        penStyle= prefs.getTracePenStyle();
     }
 
     private static class PlotCharacteristicsHolder {

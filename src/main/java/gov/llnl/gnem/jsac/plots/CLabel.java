@@ -24,8 +24,8 @@ package gov.llnl.gnem.jsac.plots;
 
 import java.awt.Color;
 import java.util.Objects;
-import llnl.gnem.dftt.core.gui.plotting.HorizAlignment;
-import llnl.gnem.dftt.core.gui.plotting.VertAlignment;
+import llnl.gnem.core.gui.plotting.HorizAlignment;
+import llnl.gnem.core.gui.plotting.VertAlignment;
 
 public class CLabel {
 

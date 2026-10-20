@@ -35,7 +35,7 @@ import gov.llnl.gnem.jsac.commands.AttributeDescriptor;
 import gov.llnl.gnem.jsac.commands.SacCommand;
 import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import gov.llnl.gnem.jsac.plots.Xlimits;
 import gov.llnl.gnem.jsac.util.PartialDataWindow;
 
@@ -82,7 +82,7 @@ public class XlimSacCommand implements SacCommand {
     @Override
     public void initialize(String[] tokens) {
         Map<String, List<Object>> parsedTokens = TokenListParser.parseTokens(descriptors, tokens);
-        Xlimits limits = PlotAxes.getInstance().getXlimits();
+        Xlimits limits = PlotPrefs.getInstance().getXlimits();
         PartialDataWindow pdw = limits.getPdw();
         List<Object> tmp = parsedTokens.remove("ON");
         if (tmp != null) {
@@ -111,8 +111,8 @@ public class XlimSacCommand implements SacCommand {
             pdw.setNoReferences();
             String s1 = (String) tmp.get(0);
             String s2 = (String) tmp.get(1);
-            Float t1 = NumberUtils.isParsable(s1) ? Float.parseFloat(s1) : null;
-            Float t2 = NumberUtils.isParsable(s2) ? Float.parseFloat(s2) : null;
+            Float t1 = NumberUtils.isParsable(s1) ? Float.valueOf(s1) : null;
+            Float t2 = NumberUtils.isParsable(s2) ? Float.valueOf(s2) : null;
             if (t1 != null && t2 != null) {
                 pdw.setStartOffset(t1);
                 pdw.setEndOffset(t2);
@@ -150,24 +150,6 @@ public class XlimSacCommand implements SacCommand {
             }
             ++tokenNumber;
         }
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Determines the plot limits for the x axis.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	XLIM {ON|OFF|pdw|SIGNAL}\n"
-                + "INPUT\n"
-                + "	{ON}:	Turn x limits on but don't change limits.\n"
-                + "	OFF:	Turn x limits off.\n"
-                + "	pdw:	Turn x limits on and set limits to a new \"partial data window.\" \n"
-                + "			A pdw consists of a starting and a stopping value of the independent \n"
-                + "			variable, usually time, which defines the desired window of data that \n"
-                + "			you wish to plot. See the CUT command for a complete explanation of \n"
-                + "			how to define and use a pdw. Some examples are given below.\n"
-                + "	SIGNAL:	Equivalent to typing: A -1 F +1.";
     }
 
     @Override

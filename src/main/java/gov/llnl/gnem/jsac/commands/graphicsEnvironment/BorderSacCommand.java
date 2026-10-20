@@ -107,25 +107,6 @@ public class BorderSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Controls the plotting of a border around plots.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	BORDER ON|OFF WIDTH VALUE, BACKGROUND VALUE, SUBPLOT_BORDERS VALUE SUBPLOT_SPACING VALUE\n"
-                + "INPUT\n"
-                + "	{ON}:			Turn border plotting on.\n"
-                + "	OFF:			Turn border plotting off.\n"
-                + "	WIDTH			Border width in mm {Default is 20 mm}\n"
-                + "	BACKGROUND   	Color of border {Default is WHITE}\n"
-                + "	SUBPLOT_BORDERS Draw box around individual sub-plots {Default is ON}\n"
-                + "	SUBPLOT_SPACING Vertical spacing between sub-plots in mm {Default is 0}\n"
-                + "	\n"
-                + "DEFAULT VALUES\n"
-                + "	BORDER OFF, WIDTH 20, BACKGROUND WHITE, SUBPLOT_BORDERS ON, SUBPLOT_SPACING 0";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = {"BORDER"};
         return new ArrayList<>(Arrays.asList(names));

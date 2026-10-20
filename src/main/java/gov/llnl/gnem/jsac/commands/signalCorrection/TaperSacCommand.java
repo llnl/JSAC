@@ -30,7 +30,7 @@ import java.util.List;
 
 import gov.llnl.gnem.jsac.SacDataModel;
 import gov.llnl.gnem.jsac.commands.SacCommand;
-import llnl.gnem.dftt.core.util.TaperType;
+import llnl.gnem.core.util.TaperType;
 
 /**
  *
@@ -104,21 +104,5 @@ public class TaperSacCommand implements SacCommand {
     public Collection<String> getCommandNames() {
         String[] names = { "TAPER" };
         return new ArrayList<>(Arrays.asList(names));
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Applies a symmetric taper to each end of data.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	TAPER {TYPE HANNING|HAMMING|COSINE},{WIDTH v}\n"
-                + "INPUT\n"
-                + "	TYPE HANNING:	Apply a Hanning taper.\n"
-                + "	TYPE HAMMING:	Apply a Hamming taper.\n"
-                + "	TYPE COSINE:	Apply a cosine taper.\n"
-                + "	WIDTH v:	Set the taper width on each end to v. This is a value between 0.0 and 0.5.\n"
-                + "DEFAULT VALUES\n"
-                + "	TAPER TYPE HANNING WIDTH 0.05";
     }
 }

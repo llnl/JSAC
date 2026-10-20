@@ -55,4 +55,23 @@ public enum MagType {
         return description;
     }
 
+    public static MagType getMagTypeFromString(String magtype) {
+        if (magtype == null) {
+            return MagType.IMX;
+        }
+        String tmp = magtype.toUpperCase();
+        if (tmp.indexOf("MB") > 0) {
+            return MagType.IMB;
+        } else if (tmp.indexOf("MS") > 0) {
+            return MagType.IMS;
+        } else if (tmp.indexOf("ML") > 0) {
+            return MagType.IML;
+        } else if (tmp.indexOf("MW") > 0) {
+            return MagType.IMW;
+        } else if (tmp.indexOf("MD") > 0) {
+            return MagType.IMD;
+        }
+        return MagType.IMX;
+    }
+
 }

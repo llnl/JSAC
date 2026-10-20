@@ -66,18 +66,4 @@ public class MulSacCommand implements SacCommand {
         return new ArrayList<>(Arrays.asList(names));
     }
 
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Multiplies each data point by a constant.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	MUL {v1 {v2 ... vn} }\n"
-                + "INPUT\n"
-                + "	v1:	Constant to multiply first file by.\n"
-                + "	v2:	Constant to multiply second file by.\n"
-                + "	vn:	Constant to multiply nth file by.\n"
-                + "DEFAULT VALUES\n"
-                + "	MUL 1.";
-    }
 }

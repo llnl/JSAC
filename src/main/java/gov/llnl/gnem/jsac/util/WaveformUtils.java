@@ -22,8 +22,8 @@
  */
 package gov.llnl.gnem.jsac.util;
 
-import llnl.gnem.dftt.core.waveform.merge.NamedIntWaveform;
-import llnl.gnem.dftt.core.waveform.seismogram.BasicSeismogram;
+import llnl.gnem.core.waveform.seismogram.BasicSeismogram;
+import llnl.gnem.core.waveform.seismogram.CssSeismogram;
 
 public class WaveformUtils {
 
@@ -40,16 +40,16 @@ public class WaveformUtils {
         return sb.toString();
     }
 
-    public static String createName(NamedIntWaveform waveform) {
+    public static String createName(CssSeismogram waveform) {
         StringBuilder sb = new StringBuilder();
 
-        if (waveform.getKey().getNet() != null) {
-            sb.append(waveform.getKey().getNet()).append(".");
+        if (waveform.getStreamKey().getNet() != null) {
+            sb.append(waveform.getStreamKey().getNet()).append(".");
         }
-        sb.append(waveform.getKey().getSta()).append(".");
-        sb.append(waveform.getKey().getChan()).append(".");
-        sb.append(waveform.getKey().getLocationCode()).append(".");
-        sb.append(waveform.getStart());
+        sb.append(waveform.getStreamKey().getSta()).append(".");
+        sb.append(waveform.getStreamKey().getChan()).append(".");
+        sb.append(waveform.getStreamKey().getLocationCode()).append(".");
+        sb.append(waveform.getTime());
         return sb.toString();
     }
 }

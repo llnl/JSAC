@@ -2,3 +2,9 @@
 /nbproject/
 *.log
 dependency-reduced-pom.xml
+nbactions*
+nb-configuration.xml
+.settings/**
+.classpath
+.project
+.vscode/

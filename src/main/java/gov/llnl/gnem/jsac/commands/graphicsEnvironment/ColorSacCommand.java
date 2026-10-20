@@ -128,39 +128,6 @@ public class ColorSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Controls color selection for color graphics devices.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	COLOR  {color} options\n"
-                + "	where options are one or more of the following:\n"
-                + "\n"
-                + "		{INCREMENT {ON|OFF}}\n"
-                + "		{SKELETON color}\n"
-                + "		{BACKGROUND color}\n"
-                + "		{LIST STANDARD|colorlist}\n"
-                + "		and where color is one of the following:\n"
-                + "			WHITE|RED|GREEN|YELLOW|BLUE|MAGENTA|CYAN|BLACK|DARK_GRAY|GRAY|LIGHT_GRAY|PINK\n"
-                + "SPECIAL NOTE The LIST option must appear last in this command.\n"
-                + "\n"
-                + "INPUT\n"
-                + "	COLOR color:	Change data color.\n"
-                + "	INCREMENT {ON}:	Increment data color from color list after each data file is plotted.\n"
-                + "	INCREMENT OFF:	Do not increment data color.\n"
-                + "	SKELETON color:	Change color of skeleton to standard color name.\n"
-                + "	BACKGROUND color:\n"
-                + "		Change background color to standard color name.\n"
-                + "	LIST colorlist:	Change the content of the color list. \n"
-                + "		Enter list of standard color names. \n"
-                + "		Sets data color to first color in list.\n"
-                + "	LIST STANDARD:	Change to the standard color list. \n"
-                + "			Sets data color to first color in list.\n"
-                + "DEFAULT VALUES\n"
-                + "	COLOR BLACK INCREMENT OFF SKELETON BLACK BACKGROUND WHITE LIST STANDARD";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = {"COLOR","COL"};
         return new ArrayList<>(Arrays.asList(names));

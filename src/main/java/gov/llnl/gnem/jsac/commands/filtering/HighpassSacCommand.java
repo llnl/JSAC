@@ -34,7 +34,7 @@ import gov.llnl.gnem.jsac.SacDataModel;
 import gov.llnl.gnem.jsac.commands.SacCommand;
 import gov.llnl.gnem.jsac.commands.TokenListParser;
 
-public class HighpassSacCommand extends IIRSacCommand implements SacCommand {
+public class HighpassSacCommand extends IIRSacImplementation implements SacCommand {
 
     @Override
     public void initialize(String[] tokens) {
@@ -62,29 +62,6 @@ public class HighpassSacCommand extends IIRSacCommand implements SacCommand {
     public Collection<String> getCommandNames() {
         String[] names = { "HP", "HIGHPASS" };
         return new ArrayList<>(Arrays.asList(names));
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Applies an IIR highpass filter.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "[H]IGH[P]ASS {[BU]TTER|[BE]SSEL|C1|C2}\n"
-                + "      {[C]ORNER v}\n"
-                + "      {[N]POLES n}\n"
-                + "      {[P]ASSES n}\n"
-                + "      {[T]RANBW v}\n"
-                + "      {[A]TTEN v}\n"
-                + "INPUT\n"
-                + "	BUTTER:	Apply a Butterworth filter.\n"
-                + "	C1:	Apply a Chebyshev Type I filter.\n"
-                + "	C2:	Apply a Chebyshev Type II filter.\n"
-                + "	CORNERS v:	Set corner frequency to v.\n"
-                + "	NPOLES n:	Set number of poles {range: 1-10}.\n"
-                + "	PASSES n:	Set number of passes {n=1: causal, n=2: zero-phase}.\n"
-                + "	TRANBW v:	Set the Chebyshev transition bandwidth to v.\n"
-                + "	ATTEN v:	Set the Chebyshev attenuation factor to v.";
     }
 
 }

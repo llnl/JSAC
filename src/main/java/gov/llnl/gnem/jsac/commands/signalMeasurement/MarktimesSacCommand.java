@@ -38,7 +38,7 @@ import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.io.SACHeader;
-import llnl.gnem.dftt.core.util.TimeT;
+import llnl.gnem.core.util.TimeT;
 
 /**
  *
@@ -217,35 +217,6 @@ public class MarktimesSacCommand implements SacCommand {
             }
         }
         return dist;
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Marks files with travel times from a velocity set.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	MARKTIMES {TO marker},{DISTANCE HEADER|v},\n"
-                + "    {ORIGIN HEADER|v|GMT time},{VELOCITIES v ...}\n"
-                + "INPUT\n"
-                + "	TO marker:	Define the first time marker in the header to store results. \n"
-                + "				The time markers are incremented for each requested velocity.\n"
-                + "                     marker:	T0|T1|T2|T3|T4|T5|T6|T7|T8|T9\n"
-                + "	DISTANCE HEADER: 	Use the distance (DIST) from the header in the travel time calculations.\n"
-                + "	DISTANCE v:			Use v as the distance in the travel time calculations.\n"
-                + "	ORIGIN HEADER:		Use the origin time (O) in the header in the travel time calculations.\n"
-                + "	ORIGIN v:			Use v as the offset origin time.\n"
-                + "	ORIGIN GMT time:	Use the Greenwich mean time time as the origin time.\n"
-                + "                             time:	Greenwich mean time in the form of six integers: \n"
-                + "					year, julian day, hour, minute, second, and millisecond.\n"
-                + "	VELOCITIES v ...:\n"
-                + "						Set the velocity set to use in the travel time calculations. \n"
-                + "						Up to 10 velocities may be entered.\n"
-                + "ALTERNATE FORMS\n"
-                + "	UTC for Universal Time Coordinate may be used instead of GMT.\n"
-                + "\n"
-                + "DEFAULT VALUES\n"
-                + "	MARKTIMES VELOCITIES 2. 3. 4. 5. 6.  DISTANCE HEADER ORIGIN HEADER TO T0";
     }
 
     @Override

@@ -26,7 +26,7 @@ package gov.llnl.gnem.jsac.plots;
 import java.util.ArrayList;
 import java.util.List;
 
-import llnl.gnem.dftt.core.util.PairT;
+import llnl.gnem.core.util.PairT;
 
 /**
  *

@@ -24,7 +24,7 @@ package gov.llnl.gnem.jsac.plots;
 
 import java.awt.Color;
 
-import llnl.gnem.dftt.core.gui.waveform.plotPrefs.PlotPreferenceModel;
+import llnl.gnem.core.gui.plotting.plotPrefs.PlotPreferenceModel;
 
 public class PlotBorderData {
     private boolean drawPlotBorder;
@@ -80,7 +80,7 @@ public class PlotBorderData {
 
     public void setSubplotSpacing(double subplotSpacing) {
         this.subplotSpacing = subplotSpacing;
-        PlotAxes.getInstance().setSubplotSpacing(subplotSpacing);
+        PlotPrefs.getInstance().setSubplotSpacing(subplotSpacing);
     }
 
     public void setBorderWidthMM(double borderWidthMM) {

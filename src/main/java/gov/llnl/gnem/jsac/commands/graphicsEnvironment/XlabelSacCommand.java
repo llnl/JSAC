@@ -31,7 +31,7 @@ import gov.llnl.gnem.jsac.commands.AttributeDescriptor;
 import gov.llnl.gnem.jsac.commands.SacCommand;
 import gov.llnl.gnem.jsac.commands.TokenListParser;
 import gov.llnl.gnem.jsac.commands.ValuePossibilities;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -69,7 +69,7 @@ public class XlabelSacCommand implements SacCommand {
         if (sizes != null) {
             for (Object aSize : sizes) {
                 String size = (String) aSize;
-                PlotAxes.getInstance().setXlabelFontSize(size.toUpperCase());
+                PlotPrefs.getInstance().setXlabelFontSize(size.toUpperCase());
                 break;
             }
         }
@@ -77,51 +77,25 @@ public class XlabelSacCommand implements SacCommand {
         List<Object> objects = parsedTokens.remove("ON");
         if (objects != null) {
             showLabel = true;
-            PlotAxes.getInstance().setShowXlabel(showLabel);
+            PlotPrefs.getInstance().setShowXlabel(showLabel);
         }
         objects = parsedTokens.remove("OFF");
         if (objects != null) {
             showLabel = false;
-            PlotAxes.getInstance().setShowXlabel(showLabel);
+            PlotPrefs.getInstance().setShowXlabel(showLabel);
         }
 
         objects = parsedTokens.get(TokenListParser.LEFT_OVER_TOKENS);
         if (objects != null && !objects.isEmpty()) {
             String label = (String) objects.get(0);
-            PlotAxes.getInstance().setShowXlabel(true);
-            PlotAxes.getInstance().setXlabel(label);
+            PlotPrefs.getInstance().setShowXlabel(true);
+            PlotPrefs.getInstance().setXlabel(label);
         }
     }
 
     @Override
     public void execute() {
 
-    }
-
-    @Override
-    public  String getHelpString() {
-        return "SUMMARY\n"
-                + "Defines the x axis label and attributes.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	XLABEL {ON|OFF|text},{SIZE size}\n"
-                + "\n"
-                + " where size is one of the following:\n"
-                + "	TINY|SMALL|MEDIUM|LARGE|HUGE\n"
-                + "\n"
-                + "INPUT\n"
-                + "	{ON}:	Turn x axis labeling option on. Don't change text.\n"
-                + "	OFF:	Turn x axis labeling option off.\n"
-                + "	text:	Turn x axis labeling option on. Change text of label. If text contains embedded blanks, \n"
-                + "			it must be enclosed in single quotes.\n"
-                + "	SIZE size:	Change x axis label text size.\n"
-                + "		TINY:	Tiny text size has 132 characters per line.\n"
-                + "		SMALL:	Small text size has 100 characters per line.\n"
-                + "		MEDIUM:	Medium text size has 80 characters per line.\n"
-                + "		LARGE:	Large text size has 50 characters per line.\n"
-                + "		HUGE:	Huge text size has 33 characters per line.\n"
-               + "DEFAULT VALUES\n"
-                + "	XLABEL OFF SIZE SMALL;";
     }
 
     @Override

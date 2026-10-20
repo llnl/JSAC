@@ -40,8 +40,8 @@ import gov.llnl.gnem.jsac.io.SACDataEncoding;
 import gov.llnl.gnem.jsac.io.SACFile;
 import gov.llnl.gnem.jsac.io.SACFileReader;
 import gov.llnl.gnem.jsac.util.PathManager;
-import llnl.gnem.dftt.core.util.TimeT;
-import llnl.gnem.dftt.core.util.FileUtil.DriveMapper;
+import llnl.gnem.core.util.TimeT;
+import llnl.gnem.core.util.FileUtil.DriveMapper;
 
 /**
  *
@@ -50,33 +50,52 @@ import llnl.gnem.dftt.core.util.FileUtil.DriveMapper;
 public class Misc {
 
     private static final Logger log = LoggerFactory.getLogger(Misc.class);
+    private static final String FORMAT_7 = "yyyyDDD";
+    private static final String FORMAT_10 = "yyyy/MM/dd";
+    private static final String FORMAT_17 = "yyyy/DDD:HH:mm:ss";
+    private static final String FORMAT_19 = "yyyy/MM/dd:HH:mm:ss";
+    private static final String FORMAT_23 = "yyyy/MM/dd-HH:mm:ss.SSS";
 
     public static double parseTimeString(String string) {
         try {
             switch (string.length()) {
-            case 7: { //yyyyddd
-                TimeT tmp = new TimeT(string, "yyyyDDD");
-                return tmp.getEpochTime();
-            }
-            case 10: {// yyyy/MM/dd
-                TimeT tmp = new TimeT(string, "yyyy/MM/dd");
-                return tmp.getEpochTime();
-            }
-            case 17: {// yyyy/DDD:HH:mm:ss
-                TimeT tmp = new TimeT(string, "yyyy/DDD:HH:mm:ss");
-                return tmp.getEpochTime();
-            }
-            case 19: {// yyyy/MM/dd:HH:mm:ss
-                TimeT tmp = new TimeT(string, "yyyy/MM/dd:HH:mm:ss");
-                return tmp.getEpochTime();
-            }
-            default:
-                break;
+                case 7: { //yyyyddd
+                    TimeT tmp = new TimeT(string, FORMAT_7);
+                    return tmp.getEpochTime();
+                }
+                case 10: {// yyyy/MM/dd
+                    TimeT tmp = new TimeT(string, FORMAT_10);
+                    return tmp.getEpochTime();
+                }
+                case 17: {// yyyy/DDD:HH:mm:ss
+                    TimeT tmp = new TimeT(string, FORMAT_17);
+                    return tmp.getEpochTime();
+                }
+                case 19: {// yyyy/MM/dd:HH:mm:ss
+                    TimeT tmp = new TimeT(string, FORMAT_19);
+                    return tmp.getEpochTime();
+                }
+                case 23: {
+                    TimeT tmp = new TimeT(string, FORMAT_23);
+                    return tmp.getEpochTime();
+                }
+                default:
+                    break;
             }
         } catch (ParseException ex) {
             throw new IllegalArgumentException("Unrecognized time string: " + string + "!");
         }
         throw new IllegalArgumentException("Unrecognized time string: " + string + "!");
+    }
+
+    public static String listTimeFormats() {
+        StringBuilder sb = new StringBuilder("Available Time Formats:\n");
+        sb.append("\t" + FORMAT_7 + "\n");
+        sb.append("\t" + FORMAT_10 + "\n");
+        sb.append("\t" + FORMAT_17 + "\n");
+        sb.append("\t" + FORMAT_19 + "\n");
+        sb.append("\t" + FORMAT_23 + "\n");
+        return sb.toString();
     }
 
     public static void buildAndProcessList(List<String> filenames, SacTraceData.BinOpType opType, boolean replaceHeaders) {
@@ -119,16 +138,16 @@ public class Misc {
     public static SacTraceData createSacFile(Path file, SACDataEncoding dataEncoding) {
         try {
             switch (dataEncoding) {
-            case BINARY: {
-                SACFile sac = SACFileReader.readFile(file);
-                return new SacTraceData(file, sac);
-            }
-            case ALPHANUMERIC: {
-                SACFile sac = SACAlphaReader.readFile(file);
-                return new SacTraceData(file, sac);
-            }
-            default:
-                throw new IllegalStateException("Unknown data encoding: " + dataEncoding);
+                case BINARY: {
+                    SACFile sac = SACFileReader.readFile(file);
+                    return new SacTraceData(file, sac);
+                }
+                case ALPHANUMERIC: {
+                    SACFile sac = SACAlphaReader.readFile(file);
+                    return new SacTraceData(file, sac);
+                }
+                default:
+                    throw new IllegalStateException("Unknown data encoding: " + dataEncoding);
             }
 
         } catch (IOException ex) {

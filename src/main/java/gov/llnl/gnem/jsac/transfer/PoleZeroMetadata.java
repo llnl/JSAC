@@ -36,8 +36,8 @@ import javax.measure.Unit;
 
 import com.isti.jevalresp.ResponseUnits;
 
-import llnl.gnem.dftt.core.util.StreamKey;
-import llnl.gnem.dftt.core.util.TimeT;
+import llnl.gnem.core.util.StreamKey;
+import llnl.gnem.core.util.TimeT;
 
 /**
  *

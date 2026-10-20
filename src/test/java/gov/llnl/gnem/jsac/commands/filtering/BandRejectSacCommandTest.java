@@ -61,16 +61,17 @@ public class BandRejectSacCommandTest {
     @Test
     public void testBR_C1_N_4_C_12_14_point5_100() {
         System.out.println("testBR_C1_N_4_C_12_14_point5_100");
-
+        System.out.println("Loading seismogram.txt...");
         TestUtil.loadTestSacAlphaFile("seismogram.txt", TestUtil.SAC_TEST_FILES_DIRECTORY);
-
+        System.out.println("Retrieving SacTraceData from model...");
         List<SacTraceData> lstd = SacDataModel.getInstance().getData();
         SacTraceData test = lstd.get(0);
 
+        System.out.println(" Running BR C1 N 4 C 12 14 T 0.5 A 100...");
         TestUtil.runCommand("BR C1 N 4 C 12 14 T 0.5 A 100", new BandRejectSacCommand());
-
+        System.out.println("Getting truth: seis.br.c1.n4.c.12_14.tr.5.atten_100.sacalpha...");
         SacTraceData truth = TestUtil.getTruthAlpha("seis.br.c1.n4.c.12_14.tr.5.atten_100.sacalpha", TestUtil.SAC_TEST_FILES_DIRECTORY);
-
+        System.out.println("Performing comparison...");
         TestUtil.compareTwoSacfileArraysExact(truth, test, "BR C1 N 4 C 12 14 point5 100", 0.001f);
     }
 

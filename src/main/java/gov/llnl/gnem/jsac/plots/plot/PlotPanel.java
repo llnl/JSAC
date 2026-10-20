@@ -20,9 +20,9 @@
  * limitations under the License.
  * #L%
  */
-
 package gov.llnl.gnem.jsac.plots.plot;
 
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,8 +36,8 @@ import org.slf4j.LoggerFactory;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacPlotData;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.plots.CLabel;
-import gov.llnl.gnem.jsac.plots.PLabel;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.FileIDInfo;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import gov.llnl.gnem.jsac.plots.PlotColors;
 import gov.llnl.gnem.jsac.plots.PlotDrawingData;
 import gov.llnl.gnem.jsac.plots.PlotUtils;
@@ -47,36 +47,31 @@ import gov.llnl.gnem.jsac.plots.picking.KeyPhaseMapper.PhaseUsage;
 import gov.llnl.gnem.jsac.plots.picking.PickConfigFrame;
 import gov.llnl.gnem.jsac.plots.picking.PickData;
 import gov.llnl.gnem.jsac.plots.picking.PickPhaseState;
-import java.util.logging.Level;
-import llnl.gnem.dftt.core.gui.plotting.HorizAlignment;
-import llnl.gnem.dftt.core.gui.plotting.HorizPinEdge;
-import llnl.gnem.dftt.core.gui.plotting.MouseMode;
-import llnl.gnem.dftt.core.gui.plotting.MouseOverPlotObject;
-import llnl.gnem.dftt.core.gui.plotting.PickCreationInfo;
-import llnl.gnem.dftt.core.gui.plotting.VertAlignment;
-import llnl.gnem.dftt.core.gui.plotting.VertPinEdge;
-import llnl.gnem.dftt.core.gui.plotting.ZoomLimits;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JPlotKeyMessage;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JPlotKeyReleasedMessage;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JSubplot;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.PickMovedState;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.VPickLine;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.XAxis;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.YAxis;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.ZoomInStateChange;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.ZoomOutStateChange;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.DataText;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.FractionalPinnedText;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.Line;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.PlotObject;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.SymbolStyle;
-import llnl.gnem.dftt.core.gui.plotting.transforms.Coordinate;
-import llnl.gnem.dftt.core.util.ApplicationLogger;
-import llnl.gnem.dftt.core.util.SeriesMath;
-
+import llnl.gnem.core.gui.plotting.MouseMode;
+import llnl.gnem.core.gui.plotting.MouseOverPlotObject;
+import llnl.gnem.core.gui.plotting.PickCreationInfo;
+import llnl.gnem.core.gui.plotting.ZoomLimits;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JPlotKeyMessage;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JPlotKeyReleasedMessage;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JSubplot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.PickMovedState;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.VPickLine;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.XAxis;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.YAxis;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.ZoomInStateChange;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.ZoomOutStateChange;
+import llnl.gnem.core.gui.plotting.plotobject.DataText;
+import llnl.gnem.core.gui.plotting.plotobject.Line;
+import llnl.gnem.core.gui.plotting.plotobject.PlotObject;
+import llnl.gnem.core.gui.plotting.plotobject.SymbolStyle;
+import llnl.gnem.core.gui.plotting.transforms.Coordinate;
 
 public class PlotPanel extends SharedPlotPanel implements Observer {
+
+    private static final long serialVersionUID = 1L;
+
+    private static final Logger log = LoggerFactory.getLogger(PlotPanel.class);
 
     private static PlotPanel INSTANCE = null;
 
@@ -119,7 +114,7 @@ public class PlotPanel extends SharedPlotPanel implements Observer {
 
         SacPlotData spd = sacData.getPlotData();
         if (spd.isFrequencyDomainData()) {
-            ApplicationLogger.getInstance().log(Level.WARNING, "The PLOT command cannot be used on spectral data.");
+            log.warn("The PLOT command cannot be used on spectral data.");
             return;
         }
         spd.maybeApplyFloorToYvalues();
@@ -131,6 +126,7 @@ public class PlotPanel extends SharedPlotPanel implements Observer {
         }
 
         Line line = (Line) subplot.Plot(spd.getxValues(), spd.getYValues());
+        line.setWidth(PlotPrefs.getInstance().getTraceLineWidth());
         PlotUtils.setYAxisScale(subplot);
         line.setPenStyle(PlotDrawingData.getInstance().getPenStyle());
         line.setSymbolStyle(SymbolStyle.CIRCLE);
@@ -138,7 +134,8 @@ public class PlotPanel extends SharedPlotPanel implements Observer {
         line.setColor(PlotColors.getInstance().getLineColor());
         lineDataMap.put(line, sacData);
         Double markerCorrection = 0.0;
-        PlotUtils.addTextToPlotVerticalOrientation(0.0, sacData, sacData, subplot, fileNumber, 0.0, line.getColor());
+        Color textColor = FileIDInfo.getInstance().getTextColor(line.getColor());
+        PlotUtils.addTextToPlotVerticalOrientation(0.0, sacData, sacData, subplot, fileNumber, 0.0, textColor);
         PlotUtils.addOriginReferenceLine(sacData, subplot, markerCorrection);
         Collection<PickData> cpd = PlotUtils.addPicks(sacData, subplot, markerCorrection);
         for (PickData pd : cpd) {
@@ -149,38 +146,26 @@ public class PlotPanel extends SharedPlotPanel implements Observer {
 
         setAllXlimits(spd.getB(), spd.getE());
         PlotUtils.setYlabelAttributes(subplot);
+        PlotUtils.setYaxisTickLabelSize(subplot);
         PlotUtils.setXlabelAttributes(this);
         PlotUtils.setXscale(this);
         subplot.getPlotRegion().setBackgroundColor(PlotColors.getInstance().getBackGroundColor());
 
         PlotUtils.setXaxisColor(this);
+        PlotUtils.setXaxisTickLabelSize(this);
         PlotUtils.setSubplotAttributes(subplot);
 
         PlotUtils.renderTitle(this);
         PlotUtils.renderBorder(this);
 
-        for (CLabel label : PlotAxes.getInstance().getCLabels()) {
+        for (CLabel label : PlotPrefs.getInstance().getCLabels()) {
             DataText dt = new DataText(label.getxValue(), label.getyValue(),
                     label.getLabelText(), label.getFontName(),
                     label.getFontSize(), label.getTextColor(),
                     label.getHorizAlignment(), label.getVertAlignment());
             subplot.AddPlotObject(dt);
         }
-        if (PlotAxes.getInstance().isShowPLabels()) {
-            for (PLabel label : PlotAxes.getInstance().getpLabels()) {
-                FractionalPinnedText fpt = new FractionalPinnedText(label.getxValue(),
-                        label.getyValue(),
-                        label.getLabelText(),
-                        HorizPinEdge.LEFT,
-                        VertPinEdge.TOP,
-                        label.getFontName(),
-                        label.getFontSize(),
-                        label.getTextColor(),
-                        HorizAlignment.LEFT,
-                        VertAlignment.BOTTOM);
-                subplot.AddPlotObject(fpt);
-            }
-        }
+        PlotUtils.maybeDisplayPLabels(subplot);
         repaint();
     }
 
@@ -218,7 +203,7 @@ public class PlotPanel extends SharedPlotPanel implements Observer {
             }
         } else if (obj instanceof PickCreationInfo) {
             PickCreationInfo pci = (PickCreationInfo) obj;
-            PlotUtils.handlePickCreationInfo(this, lineDataMap, vplDataMap, pci, 0);
+            PlotUtils.handlePickCreationInfo(this, lineDataMap, vplDataMap, pci, 0, XAxisType.Standard);
         }
     }
 
@@ -284,29 +269,14 @@ public class PlotPanel extends SharedPlotPanel implements Observer {
 
     @Override
     public void magnifyTraces() {
-        scaleTraces(2.0);
-
-    }
-
-    private void scaleTraces(double factor) {
-
-        Line[] lines = subplot.getLines();
-        for (Line line : lines) {
-            float[] data = line.getYdata();
-            double mean = SeriesMath.getMean(data);
-            SeriesMath.RemoveMean(data);
-            SeriesMath.MultiplyScalar(data, factor);
-            data = SeriesMath.Add(data, mean);
-            line.replaceYarray(data);
-        }
-
+        JMultiAxisPlot.scaleTraces(subplot, 2.0);
         this.repaint();
-
     }
 
     @Override
     public void reduceTraces() {
-        scaleTraces(0.5);
+        JMultiAxisPlot.scaleTraces(subplot, 0.5);
+        this.repaint();
     }
 
     @Override

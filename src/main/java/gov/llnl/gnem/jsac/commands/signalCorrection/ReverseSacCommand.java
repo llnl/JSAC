@@ -46,15 +46,6 @@ public class ReverseSacCommand implements SacCommand {
     }
 
     @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Reverse the order of data points.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	REVERSE";
-    }
-
-    @Override
     public Collection<String> getCommandNames() {
         String[] names = {"REVERSE"};
         return new ArrayList<>(Arrays.asList(names));

@@ -32,19 +32,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.llnl.gnem.jsac.io.GseSeismogram;
-import llnl.gnem.dftt.core.util.ApplicationLogger;
-import llnl.gnem.dftt.core.util.StreamKey;
-import llnl.gnem.dftt.core.util.TimeT;
+import llnl.gnem.core.util.ApplicationLogger;
+import llnl.gnem.core.util.StreamKey;
+import llnl.gnem.core.util.TimeT;
 
 /**
  *
  * @author dodge1
  */
 public class Ims2WaveformReader {
+    
+    private static final Logger log = LoggerFactory.getLogger(Ims2WaveformReader.class);
 
     public static Collection<GseSeismogram> readWaveformFile(String filename) throws ParseException {
         Collection<GseSeismogram> result = new ArrayList<>();
@@ -70,7 +73,7 @@ public class Ims2WaveformReader {
                 }
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Ims2WaveformReader.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(ex.getLocalizedMessage(), ex);
         }
         for (List<String> ablock : blockList) {
             GseSeismogram seis = buildSeismogram(ablock);
@@ -154,19 +157,19 @@ public class Ims2WaveformReader {
                             float[] floatData = convertToFloats(data);
                             return new GseSeismogram(null, key, floatData, samprate, time, calib, calper, instype, hang, vang, lat, lon, coordSys, elev, edepth);
                         } else {
-                            ApplicationLogger.getInstance().log(Level.WARNING, "Checksum error!");
+                            log.warn("Checksum error!");
                         }
                     } else {
-                        ApplicationLogger.getInstance().log(Level.WARNING, "Sample count != reported NumSamples!");
+                        log.warn("Sample count != reported NumSamples!");
                     }
                 } else {
-                    ApplicationLogger.getInstance().log(Level.WARNING, "DAT2 line did not follow STA2 line!");
+                    log.warn("DAT2 line did not follow STA2 line!");
                 }
             } else {
-                ApplicationLogger.getInstance().log(Level.WARNING, "STA2 line did not follow WID2 line!");
+                log.warn("STA2 line did not follow WID2 line!");
             }
         } else {
-            ApplicationLogger.getInstance().log(Level.WARNING, "Block did not begin with WID2!");
+            log.warn("Block did not begin with WID2!");
         }
         return null;
     }

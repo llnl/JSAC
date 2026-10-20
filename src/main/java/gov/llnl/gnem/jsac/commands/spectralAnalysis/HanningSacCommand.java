@@ -29,7 +29,7 @@ import java.util.Collection;
 
 import gov.llnl.gnem.jsac.SacDataModel;
 import gov.llnl.gnem.jsac.commands.SacCommand;
-import llnl.gnem.dftt.core.util.TaperType;
+import llnl.gnem.core.util.TaperType;
 
 /**
  *
@@ -53,17 +53,5 @@ public class HanningSacCommand implements SacCommand {
     public Collection<String> getCommandNames() {
         String[] names = { "HAN", "HANNING" };
         return new ArrayList<>(Arrays.asList(names));
-    }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Applies a \"hanning\" window to each data file.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	HANNING\n"
-                + "DESCRIPTION\n"
-                + "	The \"hanning\" window is a recursive smoothing algorithm defined at each interior data point, j, as:\n"
-                + "		Y(j) = 0.5 * [1 - cos(2πj/N)]";
     }
 }

@@ -53,13 +53,4 @@ public class IntSacCommand implements SacCommand {
         String[] names = {"INT", "INTEGRATE"};
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "\tPerforms rectangular integration.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "\tINT ";
-    }
 }

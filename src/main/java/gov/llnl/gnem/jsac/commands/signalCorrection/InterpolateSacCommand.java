@@ -84,22 +84,4 @@ public class InterpolateSacCommand implements SacCommand {
         String[] names = { "INTERP", "INTERPOLATE" };
         return new ArrayList<>(Arrays.asList(names));
     }
-
-    @Override
-    public String getHelpString() {
-        return "SUMMARY\n"
-                + "	Interpolates evenly-spaced data to a new sampling rate. Interpolate can also be used with unevenly-spaced data.\n"
-                + " If DELTA and NPTS are both specified DELTA takes priority and NPTS will be ignored.\n"
-                + "\n"
-                + "SYNTAX\n"
-                + "	INTERPOLATE {DELTA v} {NPTS n} {BEGIN v}\n"
-                + "INPUT\n"
-                + "	DELTA v:	Set new sampling rate to v. The time range (E-B) is not changed, so NPTS is changed. \n"
-                + "				However, E will be changed so that it is a multiple of DELTA from b.\n"
-                + "	NPTS n:		Force the number of points in interpolated file to be n. The time range (E-B) is not changed, \n"
-                + "				so DELTA is changed. \n"
-                + "	BEGIN v:	Start interpolation at v. This value becomes the begin time of the interpolated file. BEGIN can be used with either DELTA or NPTS.\n"
-                + "DEFAULT VALUES\n"
-                + "	The time series is unchanged.";
-    }
 }

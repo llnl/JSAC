@@ -36,8 +36,8 @@ import org.slf4j.LoggerFactory;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacPlotData;
 import gov.llnl.gnem.jsac.dataAccess.dataObjects.SacTraceData;
 import gov.llnl.gnem.jsac.plots.CLabel;
-import gov.llnl.gnem.jsac.plots.PLabel;
-import gov.llnl.gnem.jsac.plots.PlotAxes;
+import gov.llnl.gnem.jsac.plots.FileIDInfo;
+import gov.llnl.gnem.jsac.plots.PlotPrefs;
 import gov.llnl.gnem.jsac.plots.PlotColors;
 import gov.llnl.gnem.jsac.plots.PlotDrawingData;
 import gov.llnl.gnem.jsac.plots.PlotUtils;
@@ -50,25 +50,23 @@ import gov.llnl.gnem.jsac.plots.picking.PickConfigFrame;
 import gov.llnl.gnem.jsac.plots.picking.PickData;
 import gov.llnl.gnem.jsac.plots.picking.PickPhaseState;
 import gov.llnl.gnem.jsac.util.PartialDataWindow;
-import llnl.gnem.dftt.core.gui.plotting.HorizAlignment;
-import llnl.gnem.dftt.core.gui.plotting.HorizPinEdge;
-import llnl.gnem.dftt.core.gui.plotting.MouseMode;
-import llnl.gnem.dftt.core.gui.plotting.MouseOverPlotObject;
-import llnl.gnem.dftt.core.gui.plotting.PickCreationInfo;
-import llnl.gnem.dftt.core.gui.plotting.PlotObjectClicked;
-import llnl.gnem.dftt.core.gui.plotting.VertAlignment;
-import llnl.gnem.dftt.core.gui.plotting.VertPinEdge;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JPlotKeyMessage;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JPlotKeyReleasedMessage;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.JSubplot;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.PickMovedState;
-import llnl.gnem.dftt.core.gui.plotting.jmultiaxisplot.VPickLine;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.DataText;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.FractionalPinnedText;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.Line;
-import llnl.gnem.dftt.core.gui.plotting.plotobject.PlotObject;
-import llnl.gnem.dftt.core.util.PairT;
+import java.awt.Color;
+import java.util.logging.Level;
+import llnl.gnem.core.gui.plotting.MouseMode;
+import llnl.gnem.core.gui.plotting.MouseOverPlotObject;
+import llnl.gnem.core.gui.plotting.PickCreationInfo;
+import llnl.gnem.core.gui.plotting.PlotObjectClicked;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JMultiAxisPlot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JPlotKeyMessage;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JPlotKeyReleasedMessage;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.JSubplot;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.PickMovedState;
+import llnl.gnem.core.gui.plotting.jmultiaxisplot.VPickLine;
+import llnl.gnem.core.gui.plotting.plotobject.DataText;
+import llnl.gnem.core.gui.plotting.plotobject.Line;
+import llnl.gnem.core.gui.plotting.plotobject.PlotObject;
+import llnl.gnem.core.util.ApplicationLogger;
+import llnl.gnem.core.util.PairT;
 
 public class Plot1Panel extends SharedPlotPanel implements Observer {
 
@@ -97,10 +95,10 @@ public class Plot1Panel extends SharedPlotPanel implements Observer {
         setplotSpacing(1);
     }
 
-    public void plotDataBlock(List<SacTraceData> data, TimeMode timeMode, int offset) {
+    public void plotDataBlock(List<SacTraceData> data, TimeMode timeMode, int offset, String ReferenceMarkerName) {
         configurePlotFromPrefs();
         clear();
-        double spacing = PlotAxes.getInstance().getSubplotSpacing();
+        double spacing = PlotPrefs.getInstance().getSubplotSpacing();
         if (data.size() >= 100) {
             spacing = 0;
         }
@@ -109,19 +107,24 @@ public class Plot1Panel extends SharedPlotPanel implements Observer {
         lineSubplotMap.clear();
         vplDataMap.clear();
         traceTimeCorrectionMap.clear();
+        
+        for(SacTraceData std : data){
+          Double v =   std.getReferenceTime();
+          if(v == null){
+              String msg = String.format("File %s has no reference time set. Setting reference time to 0.0 to continue...", std.toString());
+              ApplicationLogger.getInstance().log(Level.WARNING, msg);
+              std.getSACHeader().setReferenceTime(0.0);
+          }
+        }
         switch (timeMode) {
             case ABSOLUTE:
             case RELATIVE:
-                this.setXaxisType(XAxisType.Standard);
+                setXaxisType(XAxisType.Standard);
                 break;
             case EPOCH:
-                this.setXaxisType(XAxisType.EpochTime);
+                setXaxisType(XAxisType.EpochTime);
         }
         SacTraceData earliest = PlotUtils.getEarliestTrace(data); // This is the trace with the earliest begin time (epoch time)
-        Double referenceTime = earliest.getReferenceTime();
-        if (referenceTime == null) {
-            referenceTime = 0.0;
-        }
 
         for (int j = 0; j < data.size(); ++j) {
             JSubplot sp = addSubplot();
@@ -136,93 +139,74 @@ public class Plot1Panel extends SharedPlotPanel implements Observer {
                 continue;
             }
             spd.maybeApplyFloorToYvalues();
-            spd.maybeApplyXLimits(td);
             if (spd.hasNoData()) {
                 continue;
             }
             float[] data2 = spd.getYValues();
-            Line line = null;
             double markerCorrection = 0;
-            if (null != timeMode) {
-                SacTraceData reference = td;
-                switch (timeMode) {
-                    case EPOCH: {
-                        Double beginTime = spd.getBeginTimeAsEpochTime();
-                        Double delta = spd.getDelta();
-                        if (beginTime != null && delta != null) {
-                            line = (Line) sp.Plot(beginTime, delta, data2);
-                        } else {
-                            log.warn("Unable to plot trace in Epoch time mode.");
-                            continue;
-                        }
-                        PlotUtils.addTextToPlotVerticalOrientation(0, td, reference, sp, j + offset, 0.0, line.getColor());
-                        markerCorrection = td.getSACHeader().getReferenceTime();
-                        break;
-                    }
-                    case ABSOLUTE:
-                        reference = earliest;
-                    case RELATIVE: {
-                        float[] xValues = spd.getMaybeShiftedXValues(timeMode, referenceTime);
-                        markerCorrection = spd.getxShiftForRelativeMode();
-                        line = (Line) sp.Plot(xValues, spd.getYValues());
+            SacTraceData reference = td;
+
+            switch (timeMode) {
+                case EPOCH: {
+                    Line line;
+                    Double beginTime = spd.getBeginTimeAsEpochTime();
+                    Double delta = spd.getDelta();
+                    if (beginTime != null && delta != null) {
+                        line = (Line) sp.Plot(beginTime, delta, data2);
                         line.setColor(PlotColors.getInstance().getLineColor());
-                        switch (timeMode) {
-                            case ABSOLUTE:
-                            case RELATIVE:
-                                PlotUtils.addTextToPlotVerticalOrientation(0, td, reference, sp, j + offset, 0.0, line.getColor());
-                                break;
-                        }
-
-                        break;
+                    } else {
+                        log.warn("Unable to plot trace in Epoch time mode.");
+                        continue;
                     }
-                    default:
-                        break;
+                    Color textColor = FileIDInfo.getInstance().getTextColor(line.getColor());
+                    PlotUtils.addOriginReferenceLineEpoch(td, sp);
+                    Collection<PickData> cpd = PlotUtils.addPicks(td, sp, td.getReferenceTime());
+                    for (PickData pd : cpd) {
+                        vplDataMap.put(pd.getVpl(), pd);
+                    }
+                    line.setPenStyle(PlotDrawingData.getInstance().getPenStyle());
+                    PlotUtils.setYAxisScale(sp);
+                    lineTraceMap.put(line, td);
+                    lineSubplotMap.put(line, sp);
+                    markerCorrection = earliest.getReferenceTime() - td.getReferenceTime();
+                    PlotUtils.addTextToPlotVerticalOrientation(0, td, reference, sp, j + offset, markerCorrection, textColor);
+                    break;
                 }
-            }
-            traceTimeCorrectionMap.put(td, markerCorrection);
-            PlotUtils.addOriginReferenceLine(td, sp, markerCorrection);
-            Collection<PickData> cpd = PlotUtils.addPicks(td, sp, markerCorrection);
-            for (PickData pd : cpd) {
-                vplDataMap.put(pd.getVpl(), pd);
-            }
-            if (line != null) {
-                line.setPenStyle(PlotDrawingData.getInstance().getPenStyle());
-                PlotUtils.setYAxisScale(sp);
-                lineTraceMap.put(line, td);
-                lineSubplotMap.put(line, sp);
 
-                sp.getPlotRegion().setBackgroundColor(PlotColors.getInstance().getBackGroundColor());
-                PlotUtils.maybeSetYlimits(sp);
-                PlotUtils.setYlabelAttributes(sp);
-                PlotUtils.setSubplotAttributes(sp);
+                case ABSOLUTE: {
+                    reference = earliest;
+                    Double traceShift = td.getSACHeader().getReferenceTime() - reference.getReferenceTime();
+                    plotSingleTrace(spd, traceShift, sp, td, reference, j, offset, markerCorrection);
+                    break;
+                }
+                case RELATIVE: {
+                    Double traceShift = -(Double) td.getSACHeader().getValue(ReferenceMarkerName);
+                    plotSingleTrace(spd, traceShift, sp, td, reference, j, offset, traceShift);
+                    break;
+                }
+                default:
+                    break;
+
             }
-            for (CLabel label : PlotAxes.getInstance().getCLabels()) {
+
+            sp.getPlotRegion().setBackgroundColor(PlotColors.getInstance().getBackGroundColor());
+            PlotUtils.maybeSetYlimits(sp);
+            PlotUtils.setYlabelAttributes(sp);
+            PlotUtils.setSubplotAttributes(sp);
+
+            for (CLabel label : PlotPrefs.getInstance().getCLabels()) {
                 DataText dt = new DataText(label.getxValue(), label.getyValue(),
                         label.getLabelText(), label.getFontName(),
                         label.getFontSize(), label.getTextColor(),
                         label.getHorizAlignment(), label.getVertAlignment());
                 sp.AddPlotObject(dt);
             }
-            if (PlotAxes.getInstance().isShowPLabels()) {
-                for (PLabel label : PlotAxes.getInstance().getpLabels()) {
-                    FractionalPinnedText fpt = new FractionalPinnedText(label.getxValue(),
-                            label.getyValue(),
-                            label.getLabelText(),
-                            HorizPinEdge.LEFT,
-                            VertPinEdge.TOP,
-                            label.getFontName(),
-                            label.getFontSize(),
-                            label.getTextColor(),
-                            HorizAlignment.LEFT,
-                            VertAlignment.BOTTOM);
-                    sp.AddPlotObject(fpt);
-                }
-            }
+            PlotUtils.maybeDisplayPLabels(sp);
 
         }
 
         setAllXlimits();
-        Xlimits limits = PlotAxes.getInstance().getXlimits();
+        Xlimits limits = PlotPrefs.getInstance().getXlimits();
         if (limits.isLimitsOn()) {
             PartialDataWindow pdw = limits.getPdw();
             setAllXlimits(pdw.getStartOffset(), pdw.getEndOffset());
@@ -233,6 +217,25 @@ public class Plot1Panel extends SharedPlotPanel implements Observer {
         PlotUtils.renderTitle(this);
         PlotUtils.renderBorder(this);
         repaint();
+    }
+
+    private void plotSingleTrace(SacPlotData spd, Double traceShift, JSubplot sp, SacTraceData td, SacTraceData reference, int j, int offset, double markerCorrection) {
+        Line line;
+        float[] xValues = spd.getShiftedXValues(traceShift);
+        line = (Line) sp.Plot(xValues, spd.getYValues());
+        line.setColor(PlotColors.getInstance().getLineColor());
+        Color textColor = FileIDInfo.getInstance().getTextColor(line.getColor());
+        PlotUtils.addTextToPlotVerticalOrientation(0, td, reference, sp, j + offset, -markerCorrection, textColor);
+        traceTimeCorrectionMap.put(td, traceShift);
+        PlotUtils.addOriginReferenceLine(td, sp, traceShift);
+        Collection<PickData> cpd = PlotUtils.addPicks(td, sp, traceShift);
+        for (PickData pd : cpd) {
+            vplDataMap.put(pd.getVpl(), pd);
+        }
+        line.setPenStyle(PlotDrawingData.getInstance().getPenStyle());
+        PlotUtils.setYAxisScale(sp);
+        lineTraceMap.put(line, td);
+        lineSubplotMap.put(line, sp);
     }
 
     @Override
@@ -267,9 +270,10 @@ public class Plot1Panel extends SharedPlotPanel implements Observer {
                 PlotUtils.updateHeaderForMovedPick(pd, deltaT);
             }
         } else if (obj instanceof PickCreationInfo) {
+            XAxisType type = this.getXaxisType();
             PickCreationInfo pci = (PickCreationInfo) obj;
             Double markerCorrection = getMarkerCorrection(pci);
-            PlotUtils.handlePickCreationInfo(this, lineTraceMap, vplDataMap, pci, markerCorrection);
+            PlotUtils.handlePickCreationInfo(this, lineTraceMap, vplDataMap, pci, markerCorrection, type);
         }
     }
 
@@ -335,8 +339,10 @@ public class Plot1Panel extends SharedPlotPanel implements Observer {
     }
 
     private void scaleTraces(double factor) {
-        Collection<Line> lines = lineTraceMap.keySet();
-        PlotUtils.rescaleLines(lines, factor);
+        
+        for(JSubplot subplot : this.lineSubplotMap.values()){
+            JMultiAxisPlot.scaleTraces(subplot, factor);
+        }
         this.repaint();
     }
 
@@ -381,7 +387,7 @@ public class Plot1Panel extends SharedPlotPanel implements Observer {
             }
         }
 
-        Xlimits limits = PlotAxes.getInstance().getXlimits();
+        Xlimits limits = PlotPrefs.getInstance().getXlimits();
         if (limits.isLimitsOn()) {
             PartialDataWindow pdw = limits.getPdw();
             String startRef = pdw.getStartReference();

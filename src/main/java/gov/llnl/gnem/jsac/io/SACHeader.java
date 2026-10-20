@@ -56,11 +56,13 @@ import gov.llnl.gnem.jsac.io.enums.Iztype;
 import gov.llnl.gnem.jsac.io.enums.MagSource;
 import gov.llnl.gnem.jsac.io.enums.MagType;
 import gov.llnl.gnem.jsac.io.enums.SyntheticsType;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 
-import llnl.gnem.dftt.core.util.Epoch;
-import llnl.gnem.dftt.core.util.StreamKey;
-import llnl.gnem.dftt.core.util.TimeT;
-import llnl.gnem.dftt.core.util.Geometry.EModel;
+import llnl.gnem.core.util.Epoch;
+import llnl.gnem.core.util.StreamKey;
+import llnl.gnem.core.util.TimeT;
+import llnl.gnem.core.util.Geometry.EModel;
 
 //Doubles instead of doubles
 //Enums for various itypes
@@ -155,7 +157,7 @@ public class SACHeader {
     private Integer unused15;
     private Integer unused16;
     private Body ibody;
-    private Integer unused20;
+    private Integer scenario;
     private Integer unused21;
     private Integer unused22;
     private Integer unused23;
@@ -256,7 +258,7 @@ public class SACHeader {
         unused15 = old.unused15;
         unused16 = old.unused16;
         ibody = old.ibody;
-        unused20 = old.unused20;
+        scenario = old.scenario;
         unused21 = old.unused21;
         unused22 = old.unused22;
         unused23 = old.unused23;
@@ -342,7 +344,7 @@ public class SACHeader {
         ps.printf(fmt2, "  nsnpts", nsnpts, "   nwfid", nwfid, "  nxsize", nxsize, "  nysize", nysize, "unused15", unused15);
         ps.printf(fmt4, "  iftype", iftypeS, "    idep", idepS, "  iztype", iztypeS, "unused16", unused16, "   iinst", iinst);
         ps.printf(fmt5, "  istreg", istreg, "  ievreg", ievreg, "  ievtyp", ievtypS, "   iqual", iqualS, "  isynth", isynthS);
-        ps.printf(fmt4, " imagtyp", imagtypS, " imagsrc", imagsrcS, "   ibody", ibodyS, "unused20", unused20, "unused21", unused21);
+        ps.printf(fmt4, " imagtyp", imagtypS, " imagsrc", imagsrcS, "   ibody", ibodyS, "scenario", scenario, "unused21", unused21);
         ps.printf(fmt2, "unused22", unused22, "unused23", unused23, "unused24", unused24, "unused25", unused25, "unused26", unused26);
         ps.printf(fmt2, "   leven", leven, "  lpspol", lpspol, "  lovrok", lovrok, "  lcalda", lcalda, "unused27", unused27);
         ps.printf("%s: %8s, %s: %16s\n", "   kstnm", kstnm, "   kevnm", kevnm);
@@ -509,7 +511,7 @@ public class SACHeader {
             intBuffer.add(formatInt(ibodyL.getCode()));
         }
 
-        intBuffer.add(formatInt(getUnused20()));
+        intBuffer.add(formatInt(getScenario()));
         intBuffer.add(formatInt(getUnused21()));
         intBuffer.add(formatInt(getUnused22()));
         intBuffer.add(formatInt(getUnused23()));
@@ -712,6 +714,44 @@ public class SACHeader {
         return getTrimmedString(kuser2);
     }
 
+    /*
+    Certain plotting functions may require traces to be shifted by some amount.
+    In order to properly report the reference time for plot text fields, all functons
+    that return a relative time as a String must be corrected by that amount.
+     */
+    public String getKzdate(double refTimeAdjustment) {
+        Double refTime = getReferenceTime();
+        if (refTime == null) {
+            return null;
+        } else {
+            TimeT time = new TimeT(refTime + refTimeAdjustment);
+            return time.toString("MMM dd (DDD), yyyy").toUpperCase();
+        }
+    }
+
+    public String getKzdate() {
+        return getKzdate(0.0);
+    }
+
+    /*
+    Certain plotting functions may require traces to be shifted by some amount.
+    In order to properly report the reference time for plot text fields, all functons
+    that return a relative time as a String must be corrected by that amount.
+     */
+    public String getKztime(double refTimeAdjustment) {
+        Double refTime = getReferenceTime();
+        if (refTime == null) {
+            return null;
+        } else {
+            TimeT time = new TimeT(refTime + refTimeAdjustment);
+            return time.toString("HH:mm:ss.SSS");
+        }
+    }
+
+    public String getKztime() {
+        return getKztime(0.0);
+    }
+
     public Integer getLcalda() {
         return lcalda;
     }
@@ -881,8 +921,8 @@ public class SACHeader {
         return ibody;
     }
 
-    public Integer getUnused20() {
-        return unused20;
+    public Integer getScenario() {
+        return scenario;
     }
 
     public Integer getUnused21() {
@@ -968,16 +1008,25 @@ public class SACHeader {
 
     }
 
-    public void setReferenceTime(double refTime) {
-        TimeT tmp = new TimeT(refTime);
-        nzyear = tmp.getYear();
-        nzjday = tmp.getJDay();
-        nzhour = tmp.getHour();
-        nzmin = tmp.getMinute();
-        nzsec = tmp.getSec();
-        double seconds = tmp.getSecond();
-        double frac = seconds - nzsec;
-        nzmsec = (int) Math.round(frac * 1000);
+    public void setReferenceTime(Double refTime) {
+        if (refTime == null) {
+            nzyear = null;
+            nzjday = null;
+            nzhour = null;
+            nzmin = null;
+            nzsec = null;
+            nzmsec = null;
+        } else {
+            TimeT tmp = new TimeT(refTime);
+            nzyear = tmp.getYear();
+            nzjday = tmp.getJDay();
+            nzhour = tmp.getHour();
+            nzmin = tmp.getMinute();
+            nzsec = tmp.getSec();
+            double seconds = tmp.getSecond();
+            double frac = seconds - nzsec;
+            nzmsec = (int) Math.round(frac * 1000);
+        }
     }
 
     public void setReferenceTime(int year, int jday, int hour, int min, int sec, int msec) {
@@ -987,6 +1036,29 @@ public class SACHeader {
         nzmin = min;
         nzsec = sec;
         nzmsec = msec;
+    }
+
+    public void shiftAllT(double value) {
+        if (b != null) {
+            b += value;
+        }
+        if (e != null) {
+            e += value;
+        }
+        if (o != null) {
+            o += value;
+        }
+        if (a != null) {
+            a += value;
+        }
+        if (f != null) {
+            f += value;
+        }
+        for (int j = 0; j < t.length; ++j) {
+            if (t[j] != null) {
+                t[j] += value;
+            }
+        }
     }
 
     public void setAllT(double value) {
@@ -1400,8 +1472,8 @@ public class SACHeader {
         this.ibody = ibody;
     }
 
-    public void setUnused20(Integer unused20) {
-        this.unused20 = unused20;
+    public void setScenario(Integer scenario) {
+        this.scenario = scenario;
     }
 
     public void setUnused21(Integer unused21) {
@@ -1516,7 +1588,7 @@ public class SACHeader {
     private static final Map<String, Method> NAME_GETTER_MAP = new HashMap<>();
     private static final Set<String> RESTRICTED_HEADER_VARIABLES = new HashSet<>();
     private static final Set<String> SETTABLE_FIELDS = new HashSet<>();
-    private static final Set<String> TIME_OFFSET_FIELDS = new HashSet<>();
+    private static final Set<String> TIME_OFFSET_FIELDS = new LinkedHashSet<>();
     private static final Set<String> UNEXPORTED_FIELDS = new HashSet<>();
 
     public static Collection<String> getSettableFields() {
@@ -1550,7 +1622,7 @@ public class SACHeader {
             }
         }
 
-        String[] tmp = { "NVHDR", "NPTS", "NWFID", "NORID", "NEVID", "LCALDA", "LOVROK" };
+        String[] tmp = {"NVHDR", "NPTS", "LCALDA", "LOVROK"};
         RESTRICTED_HEADER_VARIABLES.addAll(Arrays.asList(tmp));
 
         Field[] fields = c.getDeclaredFields();
@@ -1560,8 +1632,26 @@ public class SACHeader {
                 SETTABLE_FIELDS.add(tmpf);
             }
         }
-        String[] tmp2 = { "B", "E", "O", "A", "F", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9" };
+        String[] tmp2 = {"B", "E", "O", "A", "F", "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9"};
         TIME_OFFSET_FIELDS.addAll(Arrays.asList(tmp2));
+    }
+
+    public static boolean isValidTimeOffsetFieldName(String name) {
+        return TIME_OFFSET_FIELDS.contains(name.toUpperCase());
+    }
+
+    public static String getTimeOffsetFieldNames() {
+        StringBuilder sb = new StringBuilder();
+        int n = TIME_OFFSET_FIELDS.size();
+        Iterator<String> it = TIME_OFFSET_FIELDS.iterator();
+        int j = 1;
+        while (it.hasNext()) {
+            sb.append(it.next());
+            if (j++ < n) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
     }
 
     public static Type getTypeForField(String fieldName) {
@@ -1738,6 +1828,15 @@ public class SACHeader {
             return false;
         }
         String name = fieldName.toUpperCase();
+        if (name.equals("T")) {
+            return false;
+        } else if (name.equals("KT")) {
+            return false;
+        } else if (name.equals("RESP")) {
+            return false;
+        } else if (name.equals("USER")) {
+            return false;
+        }
         if (name.length() == 3 && name.indexOf("KT") == 0) {
             String tmp = name.substring(2);
             if (NumberUtils.isParsable(tmp)) {
@@ -1778,6 +1877,14 @@ public class SACHeader {
     }
 
     public Object getValue(String fieldName) {
+        return getValue(fieldName, 0.0);
+    }
+
+    /*
+    For certain plotting purposes it may be necessary to report relative time Strings
+    that have been adjusted to account for traces shifted in time in the plot axis.
+     */
+    public Object getValue(String fieldName, double refTimeAdjustment) {
         if (fieldName == null || fieldName.isEmpty()) {
             return null;
         }
@@ -1812,24 +1919,10 @@ public class SACHeader {
             }
         }
         if (name.equals("KZDATE")) {
-            Double refTime = getReferenceTime();
-            if (refTime == null) {
-                return null;
-            } else {
-                TimeT time = new TimeT(refTime);
-                return time.toString("MMM dd (DDD), yyyy").toUpperCase();
-            }
-
+            return getKzdate(refTimeAdjustment);
         }
         if (name.equals("KZTIME")) {
-            Double refTime = getReferenceTime();
-            if (refTime == null) {
-                return null;
-            } else {
-                TimeT time = new TimeT(refTime);
-                return time.toString("HH:mm:ss.SSS");
-            }
-
+            return getKztime(refTimeAdjustment);
         }
 
         if (name.equals("KSTCMP")) {
@@ -2012,7 +2105,7 @@ public class SACHeader {
         hash = 97 * hash + Objects.hashCode(this.unused15);
         hash = 97 * hash + Objects.hashCode(this.unused16);
         hash = 97 * hash + Objects.hashCode(this.ibody);
-        hash = 97 * hash + Objects.hashCode(this.unused20);
+        hash = 97 * hash + Objects.hashCode(this.scenario);
         hash = 97 * hash + Objects.hashCode(this.unused21);
         hash = 97 * hash + Objects.hashCode(this.unused22);
         hash = 97 * hash + Objects.hashCode(this.unused23);
@@ -2284,7 +2377,7 @@ public class SACHeader {
         if (this.ibody != other.ibody) {
             return false;
         }
-        if (!Objects.equals(this.unused20, other.unused20)) {
+        if (!Objects.equals(this.scenario, other.scenario)) {
             return false;
         }
         if (!Objects.equals(this.unused21, other.unused21)) {
